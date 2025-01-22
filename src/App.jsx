@@ -19,50 +19,38 @@ const Dashboard = () => {
 
   return (
     <div className="container">
-      {/* Navigation Bar */}
-      <nav className="navbar">
-        {/* Clickable Logo */}
+       <nav className="navbar">
         <a href="#" className="logo">Smart Classroom</a>
-        {/* Toggle Switch Button */}
         <div className="switchButtonContainer">
           <label className="switchLabel">
             <input
               type="checkbox"
               checked={isToggled}
-              onChange={handleToggle}
-            />
+              onChange={handleToggle} />
             <span className="switchSlider"></span>
           </label>
         </div>
-        {/* Clickable Message Icon */}
         <a href="#" className="navIcon">✉️</a>
       </nav>
 
-      {/* Hero Section */}
       <div className="heroSection">
-        {/* Left Section (Blank) */}
         <div className="leftSection"></div>
-
-        {/* Right Section (Tasks Dropdown) */}
-        <div className="rightSection">
-          <div className="taskGroup">
+           <div className="rightSection">
+            <div className="taskGroup">
             {tasks.map((task) => (
               <div key={task.id} className="taskContainer">
                 <div className="taskHeader" onClick={() => toggleTask(task.id)}>
-                  <span className="taskTitle">{task.title}</span>
-                  <span className="taskStatus">{task.status}</span>
-                  <span className="expandIcon">{expandedTask === task.id ? "▲" : "▼"}</span>
+        <span className="taskTitle">{task.title}</span>
+         <span className="taskStatus">{task.status}</span>
+         <span className="expandIcon">{expandedTask === task.id ? "▲" : "▼"}</span>
                 </div>
                 {expandedTask === task.id && (
-                  <div className="taskDetails">{task.description}</div>
-                )}
+                  <div className="taskDetails">{task.description}</div> )}
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      {/* Clickable Chatbot Button */}
       <a href="#" className="chatIcon">💬</a>
     </div>
   );
@@ -70,7 +58,7 @@ const Dashboard = () => {
 
 export default Dashboard;
 
-// CSS styles
+
 const styles = `
 .container {
   font-family: Arial, sans-serif;
@@ -230,7 +218,6 @@ input:checked + .switchSlider:before {
 }
 `;
 
-// Inject styles into the document head
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = styles;
