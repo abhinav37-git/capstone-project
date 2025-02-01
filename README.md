@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Capstone Project Documentation: Educational Module Platform
 
-## Getting Started
+## Table of Contents
 
-First, run the development server:
+- [Introduction](#introduction)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Data Structures](#data-structures)
+- [API Endpoints (if applicable)](#api-endpoints)
+- [Contributing](#contributing)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Introduction
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This project is a web application designed as an educational module platform. It provides a structured way to organize and present learning content across different subjects. Users can browse subjects and access individual modules within those subjects.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Subject Browsing:** Users can browse available subjects (e.g., IoT, Blockchain, Machine Learning, Cloud Computing).
+- **Module Access:** Each subject contains multiple modules with specific learning content.
+- **Content Presentation:** Modules present learning content in a clear and organized manner.
+- **Data Management:** The platform efficiently manages and stores subject and module data.
+- *(Add any other specific features, e.g., search, user progress tracking, quizzes, admin panel, etc.)*
 
-## Learn More
+## Technologies Used
 
-To learn more about Next.js, take a look at the following resources:
+- **Frontend:** *(List frontend technologies used, e.g., React, Next.js, Vue.js, HTML, CSS, JavaScript)*
+- **Backend:** *(List backend technologies used, if any, e.g., Node.js, Python/Flask/Django, etc.)*
+- **Database:** *(Specify the database used, if any, e.g., PostgreSQL, MongoDB, etc.)*
+- **Other:** *(Mention any other relevant technologies, e.g., cloud platforms, libraries, frameworks)*
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repository:**
+    ```sh
+    git clone [https://github.com/Komallsood/capstone-project.git](https://github.com/Komallsood/capstone-project.git)
+    cd capstone-project
+    ```
+2. **Install the required dependencies:**
+    ```sh
+    npm i
+    ```
+3. **Set up the environment variables** (see below).
+4. **Run the application:**
+    ```sh
+    npm run dev
+    ```
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `PORT`: The port number for the application (default: 3000)
+- *(List any other environment variables your project uses, e.g., database connection strings, API keys, etc.)*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Structures
+
+- **Subjects:** Each subject has an `id` (e.g., "iot"), a `name` (e.g., "Internet of Things").
+- **Modules:** Each module belongs to a subject and has an `id` (e.g., "iot-basics"), a `title` (e.g., "IoT Fundamentals"), and `content` (the learning material).
+- *(Add any other relevant data structures, e.g., user data, quiz data, etc.)*
+
+## API Endpoints (if applicable)
+
+- `GET /api/subjects`: Returns a list of all subjects.
+- `GET /api/subjects/:id/modules`: Returns a list of modules for a specific subject.
+- `GET /api/modules/:id`: Returns the content for a specific module.
+- *(Add descriptions for all other endpoints, including request parameters, response format, etc.)*
+
+## Contributing
+
+Contributions are welcome! If you would like to contribute to this project, please follow these guidelines:
+
+1. **Fork the repository.**
+2. **Create a new branch** for your changes.
+3. **Make your changes** and commit them.
+4. **Push your changes** to your fork.
+5. **Open a pull request** with a clear description of the changes.
