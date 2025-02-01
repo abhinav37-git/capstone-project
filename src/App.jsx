@@ -1,225 +1,100 @@
-import React, { useState } from "react";
+import { Button, Card, CardHeader, CardContent, Input, Navbar, NavbarLink } from "@/components/ui"
+import { useState } from "react"
+
+const modules = [
+  {
+    id: 1,
+    title: "Module 1: Introduction to AI",
+    content: ["Chapter 1: What is AI?", "Chapter 2: History of AI"],
+  },
+  {
+    id: 2,
+    title: "Module 2: Machine Learning",
+    content: [
+      "Chapter 1: Supervised Learning",
+      "Chapter 2: Unsupervised Learning",
+      "Chapter 3: Reinforcement Learning",
+    ],
+  },
+  {
+    id: 3,
+    title: "Module 3: Deep Learning",
+    content: [
+      "Chapter 1: Neural Networks",
+      "Chapter 2: Convolutional Neural Networks",
+      "Chapter 3: Recurrent Neural Networks",
+    ],
+  },
+]
 
 const Dashboard = () => {
-  const [expandedTask, setExpandedTask] = useState(null);
-  const [isToggled, setIsToggled] = useState(false);
+  const [expandedModule, setExpandedModule] = useState(null)
 
-  const tasks = [
-    { id: 1, title: "Task 1", status: "Introduction", description: "Welcome to Advent of Cyber 2024" },
-    { id: 2, title: "Task 2", status: "Introduction", description: "Join our community" },
-  ];
-
-  const toggleTask = (taskId) => {
-    setExpandedTask(expandedTask === taskId ? null : taskId);
-  };
-
-  const handleToggle = () => {
-    setIsToggled(!isToggled);
-  };
+  const toggleModule = (moduleId) => {
+    setExpandedModule(expandedModule === moduleId ? null : moduleId)
+  }
 
   return (
-    <div className="container">
-       <nav className="navbar">
-        <a href="#" className="logo">Smart Classroom</a>
-        <div className="switchButtonContainer">
-          <label className="switchLabel">
-            <input
-              type="checkbox"
-              checked={isToggled}
-              onChange={handleToggle} />
-            <span className="switchSlider"></span>
-          </label>
+    <div className="container mx-auto p-4">
+      <Navbar className="mb-6">
+        <NavbarLink href="#" className="font-bold text-lg">
+          Smart Module
+        </NavbarLink>
+        <div className="flex items-center gap-4 ml-auto">
+          <Button variant="ghost" size="icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.1H4.75c-1.133 0-1.98-.964-1.98-2.1v-4.286c0-.969.616-1.813 1.5-2.097m16.022 0h-7.988c-.523 0-.96-.74-1.008-1.296M20.25 8.511v-3.872c0-.87-.617-1.591-1.5-1.816m-7.992 0V4.645L12.25 12l7.992-7.355m-7.992 0a3 3 0 10-3 3m3 0a3 3 0 113-3m-3 0H6.02c0 1.604 1.03 3 2.5 3"
+              />
+            </svg>
+          </Button>
         </div>
-        <a href="#" className="navIcon">✉️</a>
-      </nav>
+      </Navbar>
 
-      <div className="heroSection">
-        <div className="leftSection"></div>
-           <div className="rightSection">
-            <div className="taskGroup">
-            {tasks.map((task) => (
-              <div key={task.id} className="taskContainer">
-                <div className="taskHeader" onClick={() => toggleTask(task.id)}>
-        <span className="taskTitle">{task.title}</span>
-         <span className="taskStatus">{task.status}</span>
-         <span className="expandIcon">{expandedTask === task.id ? "▲" : "▼"}</span>
-                </div>
-                {expandedTask === task.id && (
-                  <div className="taskDetails">{task.description}</div> )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {modules.map((module) => (
+          <Card key={module.id}>
+            <CardHeader className="cursor-pointer" onClick={() => toggleModule(module.id)}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{module.title}</h3>
+                <span className="text-sm">{expandedModule === module.id ? "▲" : "▼"}</span>
               </div>
-            ))}
-          </div>
-        </div>
+            </CardHeader>
+            {expandedModule === module.id && (
+              <CardContent>
+                <ul className="list-disc pl-5 space-y-1">
+                  {module.content.map((chapter, index) => (
+                    <li key={index}>{chapter}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            )}
+          </Card>
+        ))}
       </div>
-      <a href="#" className="chatIcon">💬</a>
+
+      <div className="fixed bottom-4 left-4">
+        <Card className="w-64">
+          <CardHeader>
+            <h3 className="text-lg font-semibold">AI Agent</h3>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input placeholder="Type your question..." />
+            <Button className="w-full">Ask</Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  );
-};
-
-export default Dashboard;
-
-
-const styles = `
-.container {
-  font-family: Arial, sans-serif;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f4f4f4;
+  )
 }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-}
-
-.logo {
-  font-size: 20px;
-  font-weight: bold;
-  color: white;
-  text-decoration: none;
-  margin-right: 10px; /* Adjust space between logo and toggle */
-}
-
-.switchButtonContainer {
-  margin-left: 10px; /* Shift toggle more left */
-}
-
-.switchLabel {
-  position: relative;
-  display: inline-block;
-  width: 34px;
-  height: 20px;
-}
-
-.switchLabel input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switchSlider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
-}
-
-.switchSlider:before {
-  position: absolute;
-  content: "";
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-}
-
-input:checked + .switchSlider {
-  background-color: #4caf50;
-}
-
-input:checked + .switchSlider:before {
-  transform: translateX(14px);
-}
-
-.navIcon {
-  font-size: 20px;
-  color: white;
-  text-decoration: none;
-  margin-left: auto; /* Keeps the message icon on the right */
-}
-
-.heroSection {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  padding: 20px;
-  background-color: #ffffff;
-}
-
-.leftSection {
-  flex: 1;
-  margin-right: 20px;
-  background-color: #f4f4f4;
-}
-
-.rightSection {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-}
-
-.taskGroup {
-  width: 100%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.taskContainer {
-  background-color: #1e1e2f;
-  color: #ffffff;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.taskHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  cursor: pointer;
-  background-color: #2a2a3f;
-}
-
-.taskTitle {
-  font-weight: bold;
-}
-
-.taskStatus {
-  background-color: #007bff;
-  color: white;
-  padding: 3px 10px;
-  border-radius: 15px;
-  font-size: 12px;
-}
-
-.expandIcon {
-  font-size: 14px;
-}
-
-.taskDetails {
-  padding: 10px 15px;
-  background-color: #2a2a3f;
-  border-top: 1px solid #444;
-}
-
-.chatIcon {
-  font-size: 30px;
-  margin-top: 20px;
-  cursor: pointer;
-  text-decoration: none;
-  color: #007bff;
-}
-`;
-
-const styleSheet = document.createElement("style");
-styleSheet.type = "text/css";
-styleSheet.innerText = styles;
-document.head.appendChild(styleSheet);
-
+export default Dashboard
