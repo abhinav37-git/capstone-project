@@ -8,7 +8,7 @@
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Data Structures](#data-structures)
-- [API Endpoints (if applicable)](#api-endpoints)
+- [API Endpoints](#api-endpoints)
 - [Contributing](#contributing)
 
 ## Introduction
