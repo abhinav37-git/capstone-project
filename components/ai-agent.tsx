@@ -19,7 +19,7 @@ export function AIAgent() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4">
+    <div className="fixed bottom-4 left-4 z-50">
       {isOpen && (
         <div className="bg-background border rounded-lg shadow-lg p-4 mb-2 w-80">
           <div className="mb-4 h-40 overflow-y-auto bg-muted p-2 rounded">
