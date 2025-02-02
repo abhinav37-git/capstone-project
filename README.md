@@ -31,17 +31,17 @@ This project is a web application designed as an educational module platform. It
 ## Installation
 1. Clone the repository:
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/Komallsood/capstone-project.git
     ```
 2. Install the required dependencies:
     ```bash
-    npm install
-    pip install -r requirements.txt
+    npm i
+    uv pip install -r requirements.txt
     ```
 3. Set up the environment variables (see below).
 4. Run the application:
     ```bash
-    npm start
+    npm run dev
     python ai_model_server.py
     ```
 
@@ -51,10 +51,10 @@ This project is a web application designed as an educational module platform. It
 ## Data Structures
 - **Subjects**: Each subject has an `id` (e.g., "iot"), a `name` (e.g., "Internet of Things").
 - **Modules**: Each module belongs to a subject and has an `id` (e.g., "iot-basics"), a `title` (e.g., "IoT Fundamentals"), and `content` (the learning material).
-- (Add any other relevant data structures, e.g., user data, quiz data, etc.)
 
-## API Endpoints (if applicable)
-- `GET /api/subjects`: Returns a list of all subjects.
+
+## API Endpoints (Tentative)
+- `GET /api/login`: Returns a list of all subjects.
 - `GET /api/subjects/:id/modules`: Returns a list of modules for a specific subject.
 - `GET /api/modules/:id`: Returns the content for a specific module.
 - (Add descriptions for all other endpoints, including request parameters, response format, etc.)
