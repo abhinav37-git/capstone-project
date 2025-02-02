@@ -23,34 +23,36 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-primary text-primary-foreground">
-      <div className="container px-4 py-8 mx-auto">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div>
-            <Link href="/dashboard" className="text-2xl font-bold">
-              Smart Module
-            </Link>
-            <p className="mt-2 text-sm text-primary-foreground/70">
+    <footer className="bg-primary text-primary-foreground py-12">
+      <div className="container px-4 mx-auto">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Smart Module</h3>
+            <p className="text-base text-primary-foreground/70">
               Empowering education through smart learning solutions.
             </p>
           </div>
           
-          <div>
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold">Resources</h3>
-            <div className="mt-4 space-y-2">
+            <div className="flex flex-col space-y-3">
               {links.resources.map((link) => (
-                <Button key={link.title} variant="link" asChild className="p-0 h-auto text-primary-foreground/70 hover:text-primary-foreground">
-                  <Link href={link.href}>{link.title}</Link>
-                </Button>
+                <Link 
+                  key={link.title} 
+                  href={link.href}
+                  className="text-base text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+                >
+                  {link.title}
+                </Link>
               ))}
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold">Connect</h3>
-            <div className="mt-4 flex space-x-4">
+            <div className="flex space-x-4">
               {links.social.map((social) => (
-                <Button key={social.label} variant="ghost" size="icon" asChild className="hover:text-primary-foreground/70">
+                <Button key={social.label} variant="ghost" size="icon" asChild>
                   <Link href={social.href}>
                     <social.icon className="h-5 w-5" />
                     <span className="sr-only">{social.label}</span>
@@ -63,7 +65,7 @@ export function Footer() {
         
         <Separator className="my-8 bg-primary-foreground/20" />
         
-        <div className="text-center text-sm text-primary-foreground/70">
+        <div className="text-center text-base text-primary-foreground/70">
           <p>© {currentYear} Smart Module. All rights reserved.</p>
         </div>
       </div>
