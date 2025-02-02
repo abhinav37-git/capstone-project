@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" // Add this import
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -36,7 +36,14 @@ export function LoginForm({ role }: { role: string }) {
     console.log(values)
     setTimeout(() => {
       setIsLoading(false)
-      router.push("/dashboard")
+      // Route based on role
+      if (role === 'admin') {
+        router.push('/admin')
+      } else if (role === 'teacher') {
+        router.push('/teacher')
+      } else {
+        router.push('/dashboard')
+      }
     }, 1000)
   }
 
@@ -76,4 +83,3 @@ export function LoginForm({ role }: { role: string }) {
     </Form>
   )
 }
-

@@ -41,13 +41,30 @@ export function SignupForm({ role }: { role: string }) {
     },
   })
 
+  // function onSubmit(values: z.infer<typeof formSchema>) {
+  //   setIsLoading(true)
+  //   // Here you would typically send a request to your authentication API
+  //   console.log(values)
+  //   setTimeout(() => {
+  //     setIsLoading(false)
+  //     router.push("/dashboard")
+  //   }, 1000)
+  // }
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
     // Here you would typically send a request to your authentication API
     console.log(values)
     setTimeout(() => {
       setIsLoading(false)
-      router.push("/dashboard")
+      // Route based on role
+      if (role === 'admin') {
+        router.push('/admin')
+      } else if (role === 'teacher') {
+        router.push('/teacher')
+      } else {
+        router.push('/dashboard')
+      }
     }, 1000)
   }
 
