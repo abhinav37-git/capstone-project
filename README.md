@@ -155,4 +155,4 @@ Contributions are welcome! If you would like to contribute to this project, plea
 ![Troubleshoot](assets/troubleshoot.png)
 
 ### AI Agent query window
-![AI Agent](assets/ai_agent.png)
+![AI Agent](assets/ai_agent_ui.png)

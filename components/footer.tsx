@@ -16,7 +16,7 @@ export function Footer() {
       { title: "Terms of Service", href: "#" },
     ],
     social: [
-      { icon: Github, href: "#", label: "GitHub" },
+      { icon: Github, href: "https://github.com/Komallsood/capstone-project/", label: "GitHub" },
       { icon: Twitter, href: "#", label: "Twitter" },
       { icon: Mail, href: "#", label: "Email" },
     ],
