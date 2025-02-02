@@ -1,2 +1,5 @@
 node_modules
 .next
+.venv
+gpt2-model
+llama-3b-model
