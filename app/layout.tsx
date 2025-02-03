@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import type React from "react"
+import { Toaster } from "sonner" // Import Toaster
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,10 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="min-h-screen flex flex-col">
+      <body className={inter.className}> {/* Use inter.className */}
+        <div className="min-h-screen flex flex-col"> {/* Keep the flex column */}
           {children}
         </div>
+        <Toaster /> {/* Move Toaster inside the body */}
       </body>
     </html>
   )
