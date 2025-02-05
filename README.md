@@ -16,17 +16,36 @@
 This project is a web application designed as an educational module platform. It provides a structured way to organize and present learning content across different subjects. Users can browse subjects and access individual modules within those subjects.
 
 ## Features
-- **Subject Browsing**: Users can browse available subjects (e.g., IoT, Blockchain, Machine Learning, Cloud Computing).
-- **Module Access**: Each subject contains multiple modules with specific learning content.
-- **Content Presentation**: Modules present learning content in a clear and organized manner.
-- **Data Management**: The platform efficiently manages and stores subject and module data.
-- (Add any other specific features, e.g., search, user progress tracking, quizzes, admin panel, etc.)
+- **Interactive Learning Modules**: Structured courses in IoT, Blockchain, ML, and Cloud Computing
+- **Progress Tracking**: Real-time progress monitoring at course/module level (shown in `app/dashboard/page.tsx:7-53`)
+- **Admin Dashboard**: Student management and analytics (shown in `app/admin/students/page.tsx:6-58`)
+- **AI-Powered Assistant**: Integrated query system with GPT-2 integration (shown in `components/ai-agent.tsx:83-105`)
+- **Role-Based Access**: Separate interfaces for students, teachers, and admins
+- **Interactive UI Components**: Resizable panels, progress visualizations, and real-time updates
+- **Student Analytics**: Track active users and course progress (shown in `components/admin/active-students.tsx:11-49`)
 
 ## Technologies Used
-- **Frontend**: React, Next.js, HTML, CSS, JavaScript
-- **Backend**: Python, Flask
-- **Database**: (Specify the database used, if any, e.g., PostgreSQL, MongoDB, etc.)
-- **Other**: Hugging Face Transformers, Flask-CORS
+- **Frontend**: 
+  - Next.js 15.1.6
+  - React 19
+  - Apollo Client
+  - shadcn/ui + Tailwind CSS
+  - Framer Motion
+- **Backend**:
+  - Node.js
+  - Apollo Server
+  - GraphQL
+- **Database**: MongoDB
+- **AI Integration**:
+  - Hugging Face Transformers
+  - Custom Flask API (Python)
+- **State Management**:
+  - Zustand
+  - React Hook Form
+- **Utilities**:
+  - Zod for validation
+  - Lucide React icons
+  - React Hot Toast
 
 ## Installation
 1. Clone the repository:
