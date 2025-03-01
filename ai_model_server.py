@@ -6,39 +6,61 @@ import logging
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-
-# Define the local directory to load the model and tokenizer
+logging.basicConfig(level=logging.INFO)
 model_dir = "gpt2-model"
 
 try:
-    # Load the model and tokenizer from the local directory
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForCausalLM.from_pretrained(model_dir)
-    logging.info("Model and tokenizer loaded from local directory.")
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+    logging.info("Model and tokenizer loaded successfully from local directory.")
 except Exception as e:
     logging.error(f"Error loading model and tokenizer: {e}")
+    raise
 
-@app.route("/api/ai-query", methods=["POST"])
+@app.route("/api/ai-query", methods=["POST", "OPTIONS"])
 def ai_query():
+    if request.method == "OPTIONS":
+        return "", 200
+
     try:
         data = request.json
-        query = data["query"]
-        page_data = data["pageData"]
+        query = data.get("query", "")
+        page_data = data.get("pageData", "")
 
-        # Combine query and page data
+        # Combine query and page data for context
         input_text = f"Page Data: {page_data}\nQuery: {query}"
-        inputs = tokenizer(input_text, return_tensors="pt")
-        outputs = model.generate(inputs["input_ids"], max_length=100)
-        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        inputs = tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
+        
+        outputs = model.generate(
+            inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
+            max_length=100,
+            do_sample=True,
+            top_k=50,
+            top_p=0.95,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id
+        )
+        raw_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        
+        # Clean the response: Remove the input text prefix
+        response_start = raw_response.find("Query:") + len(f"Query: {query}")
+        cleaned_response = raw_response[response_start:].strip() if response_start > -1 else raw_response
 
-        return jsonify({"answer": response})
+        inferred_query = f"Understood as: '{query}'"
+
+        return jsonify({
+            "inferredQuery": inferred_query,
+            "response": cleaned_response
+        })
     except Exception as e:
         logging.error(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5001, debug=True)

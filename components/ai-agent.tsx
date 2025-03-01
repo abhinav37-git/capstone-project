@@ -21,28 +21,35 @@ const suggestions = [
 export function AIAgent() {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState("")
-  const [messages, setMessages] = useState<{ type: "user" | "bot"; content: string }[]>([])
+  const [messages, setMessages] = useState<
+    { type: "user" | "bot"; content: string; inferredQuery?: string }[]
+  >([])
   const [isLoading, setIsLoading] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [windowSize, setWindowSize] = useState({ width: 384, height: 512 })
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
-  }, [scrollAreaRef])
+  }, [messages]);
 
+  // Dynamically adjust height based on content
   useEffect(() => {
     if (contentRef.current && !isMinimized) {
-      const contentHeight = contentRef.current.scrollHeight
-      setWindowSize((prev) => ({
-        ...prev,
-        height: Math.min(Math.max(contentHeight + 120, 200), 600),
-      }))
+      const contentHeight = contentRef.current.scrollHeight;
+      const minHeight = 200;
+      const maxHeight = 600;
+      const padding = 120; // Space for header, input, etc.
+      const newHeight = Math.min(Math.max(contentHeight + padding, minHeight), maxHeight);
+      setWindowSize((prev) => ({ ...prev, height: newHeight }));
     }
-  }, [contentRef, isMinimized])
+  }, [messages, isMinimized]);
+
+  // ... (toggleAgent, handleSendMessage, handleKeyPress, getAIResponse, extractPageData unchanged) ...
 
   const toggleAgent = () => {
     setIsOpen(!isOpen)
@@ -52,24 +59,27 @@ export function AIAgent() {
   }
 
   const handleSendMessage = async () => {
-    if (inputValue.trim()) {
-      const newMessage = { type: "user" as const, content: inputValue }
-      setMessages((prev) => [...prev, newMessage])
-      setInputValue("")
-      setIsLoading(true)
+    if (!inputValue.trim()) return;
 
-      try {
-        const response = await getAIResponse(inputValue)
-        setMessages((prev) => [...prev, { type: "bot", content: response }])
-      } catch (error) {
-        console.error("Error getting AI response:", error)
-        setMessages((prev) => [
-          ...prev,
-          { type: "bot", content: "Sorry, I'm having trouble connecting to the server. Please try again later." },
-        ])
-      } finally {
-        setIsLoading(false)
-      }
+    const userMessage = { type: "user" as const, content: inputValue }
+    setMessages((prev) => [...prev, userMessage])
+    setInputValue("")
+    setIsLoading(true)
+
+    try {
+      const { inferredQuery, response } = await getAIResponse(inputValue)
+      setMessages((prev) => [
+        ...prev,
+        { type: "bot", content: response, inferredQuery },
+      ])
+    } catch (error) {
+      console.error("Error getting AI response:", error)
+      setMessages((prev) => [
+        ...prev,
+        { type: "bot", content: "Sorry, something went wrong. Please try again." },
+      ])
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -85,9 +95,7 @@ export function AIAgent() {
     try {
       const response = await fetch("http://localhost:5001/api/ai-query", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, pageData }),
       })
 
@@ -96,11 +104,15 @@ export function AIAgent() {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorData?.message || response.statusText}`)
       }
 
-      const data = await response.text()
-      return data
+      const data = await response.json() // Assuming API returns JSON now
+      // Mock structure; adjust based on your API
+      return {
+      
+        response: data.response || "Here's my response to your query.",
+      }
     } catch (error) {
       console.error("Error fetching AI response:", error)
-      return "Sorry, I'm having trouble connecting to the server. Please try again later."
+      throw error
     }
   }
 
@@ -179,10 +191,17 @@ export function AIAgent() {
                           <div
                             className={cn(
                               "max-w-[80%] p-3 rounded-lg",
-                              message.type === "user" ? "bg-primary text-primary-foreground ml-auto" : "bg-muted",
+                              message.type === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-foreground",
                             )}
                           >
-                            <p className="text-sm">{message.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            {message.inferredQuery && (
+                              <p className="text-xs text-muted-foreground mt-1 italic">
+                                {message.inferredQuery}
+                              </p>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -227,4 +246,3 @@ export function AIAgent() {
     </div>
   )
 }
-

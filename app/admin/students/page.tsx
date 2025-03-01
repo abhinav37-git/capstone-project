@@ -14,7 +14,16 @@ export default function StudentsPage() {
       progress: "40%",
       joinedDate: "2024-01-15",
     },
-    // Add more sample data
+    {
+      id: "2",
+      name: "John Doe",
+      email: "john@example.com",
+      course: "Blockchain Technology",
+      progress: "65%",
+      joinedDate: "2024-01-10",
+    },
+    // Add more sample data as needed
+    
   ]
 
   return (
@@ -40,10 +49,22 @@ export default function StudentsPage() {
               <TableBody>
                 {students.map((student) => (
                   <TableRow key={student.id}>
-                    <TableCell>{student.name}</TableCell>
+                    <TableCell className="font-medium">{student.name}</TableCell>
                     <TableCell>{student.email}</TableCell>
                     <TableCell>{student.course}</TableCell>
-                    <TableCell>{student.progress}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full" 
+                            style={{ width: student.progress }}
+                          />
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {student.progress}
+                        </span>
+                      </div>
+                    </TableCell>
                     <TableCell>{student.joinedDate}</TableCell>
                   </TableRow>
                 ))}

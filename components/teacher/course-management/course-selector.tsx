@@ -5,13 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react"
 
 export function CourseSelector() {
+  const courses = useCourseStore((state) => state.courses)
   const [selectedCourse, setSelectedCourse] = useState("")
-
-  const courses = [
-    { id: "1", name: "IoT Fundamentals" },
-    { id: "2", name: "Blockchain Basics" },
-    { id: "3", name: "Machine Learning 101" }
-  ]
 
   return (
     <Card>
