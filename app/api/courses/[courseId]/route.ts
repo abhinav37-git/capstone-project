@@ -14,13 +14,13 @@ const courseUpdateSchema = z.object({
 // GET a course by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { courseId: string } }
 ) {
   try {
-    const id = params.id;
+    const courseId = params.courseId;
 
     const course = await prisma.course.findUnique({
-      where: { id },
+      where: { id: courseId },
       include: {
         modules: {
           include: {
@@ -51,10 +51,10 @@ export async function GET(
 // PATCH to update a course
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { courseId: string } }
 ) {
   try {
-    const id = params.id;
+    const courseId = params.courseId;
     const body = await req.json();
 
     // Validate the request body
@@ -68,7 +68,7 @@ export async function PATCH(
 
     // Check if course exists
     const existingCourse = await prisma.course.findUnique({
-      where: { id },
+      where: { id: courseId },
     });
 
     if (!existingCourse) {
@@ -80,7 +80,7 @@ export async function PATCH(
 
     // Update the course
     const updatedCourse = await prisma.course.update({
-      where: { id },
+      where: { id: courseId },
       data: validatedData.data,
     });
 
@@ -97,14 +97,14 @@ export async function PATCH(
 // DELETE a course
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { courseId: string } }
 ) {
   try {
-    const id = params.id;
+    const courseId = params.courseId;
 
     // Check if course exists
     const existingCourse = await prisma.course.findUnique({
-      where: { id },
+      where: { id: courseId },
     });
 
     if (!existingCourse) {
@@ -118,7 +118,7 @@ export async function DELETE(
     // Note: This will only work if cascading deletes are set up in the Prisma schema
     // or if there are no related records (modules, students, etc.)
     await prisma.course.delete({
-      where: { id },
+      where: { id: courseId },
     });
 
     return NextResponse.json(

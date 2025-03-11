@@ -1,25 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/
-
-"use client"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -56,7 +41,7 @@ interface Query {
   }
 }
 
-export function StudentQueryHistory() {
+export function StudentQueries() {
   const [queries, setQueries] = useState<Query[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -95,9 +80,9 @@ export function StudentQueryHistory() {
       case "OPEN":
         return <Badge variant="destructive">Open</Badge>
       case "IN_PROGRESS":
-        return <Badge variant="warning">In Progress</Badge>
+        return <Badge variant="default">In Progress</Badge>
       case "RESOLVED":
-        return <Badge variant="success">Resolved</Badge>
+        return <Badge variant="outline">Resolved</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -115,7 +100,7 @@ export function StudentQueryHistory() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Your Query History</CardTitle>
+          <CardTitle>Your Queries</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-center py-8">
@@ -130,7 +115,7 @@ export function StudentQueryHistory() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Your Query History</CardTitle>
+          <CardTitle>Your Queries</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-destructive">{error}</p>
@@ -143,16 +128,13 @@ export function StudentQueryHistory() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Your Query History</CardTitle>
-          <CardDescription>View all your past queries and their status</CardDescription>
+          <CardTitle>Your Queries</CardTitle>
+          <CardDescription>View and manage your submitted queries</CardDescription>
         </CardHeader>
         <CardContent>
           {queries.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">You haven't submitted any queries yet.</p>
-              <Button className="mt-4" variant="outline" asChild>
-                <a href="/dashboard/queries/new">Submit Your First Query</a>
-              </Button>
             </div>
           ) : (
             <Table>
@@ -160,8 +142,7 @@ export function StudentQueryHistory() {
                 <TableRow>
                   <TableHead>Title</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Submitted On</TableHead>
-                  <TableHead>Responses</TableHead>
+                  <TableHead>Submitted</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -170,8 +151,9 @@ export function StudentQueryHistory() {
                   <TableRow key={query.id}>
                     <TableCell className="font-medium">{query.title}</TableCell>
                     <TableCell>{getStatusBadge(query.status)}</TableCell>
-                    <TableCell>{formatDate(query.createdAt)}</TableCell>
-                    <TableCell>{query.responses.length}</TableCell>
+                    <TableCell>
+                      {formatDate(query.createdAt)}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" onClick={() => handleViewQuery(query)}>
                         View Details
