@@ -16,6 +16,19 @@
 This project is a web application designed as an educational module platform. It provides a structured way to organize and present learning content across different subjects. Users can browse subjects and access individual modules within those subjects.
 
 ## Features
+### Implemented
+- ✅ Modern UI with Radix components
+- ✅ Server-side rendering with Next.js
+- ✅ Type-safe development with TypeScript
+- ✅ Database integration with Prisma ORM
+- ✅ Containerized deployment
+
+### In Development
+- 🔄 AI learning assistance
+- 🔄 User authentication flows
+- 🔄 Course management system
+- 🔄 Learning progress tracking
+
 - **Interactive Learning Modules**: Structured courses in IoT, Blockchain, ML, and Cloud Computing
 - **Progress Tracking**: Real-time progress monitoring at course/module level (shown in `app/dashboard/page.tsx:7-53`)
 - **Admin Dashboard**: Student management and analytics (shown in `app/admin/students/page.tsx:6-58`)
@@ -25,29 +38,47 @@ This project is a web application designed as an educational module platform. It
 - **Student Analytics**: Track active users and course progress (shown in `components/admin/active-students.tsx:11-49`)
 
 ## Technologies Used
-- **Frontend**: 
-  - Next.js 15.1.6
-  - React 19
-  - Apollo Client
-  - shadcn/ui + Tailwind CSS
-  - Framer Motion
-- **Backend**:
-  - Node.js
-  - Apollo Server
-  - GraphQL
-- **Database**: MongoDB
-- **AI Integration**:
-  - Hugging Face Transformers
-  - Custom Flask API (Python)
-- **State Management**:
-  - Zustand
-  - React Hook Form
-- **Utilities**:
-  - Zod for validation
-  - Lucide React icons
-  - React Hot Toast
+### Frontend
+- **Next.js** (v15.1.6) with App Router
+- **React** (v19.0.0)
+- **TypeScript** (v5)
+- **TailwindCSS** (v3.4.1)
+- **Radix UI** components
+- **Framer Motion** (v12.0.6)
+
+### State Management & Forms
+- **Zustand** (v5.0.3)
+- **React Hook Form** (v7.54.2)
+- **Zod** (v3.24.1) for validation
+
+### Backend & Data
+- **Next Auth** (v4.24.11)
+- **Prisma ORM** (v6.4.1)
+- **PostgreSQL** database
+- **Python** (v3.9) AI model server
+
+### DevOps
+- **Docker** multi-stage containerization
+- **ESLint** (v9)
+
+## Project Structure
+
+```
+├── app/                 # Next.js App Router
+├── components/          # React components
+├── prisma/              # Database configuration
+├── lib/                 # Utility functions
+├── public/              # Static assets
+└── ai_model_server.py   # Python AI service
+```
 
 ## Installation
+### Prerequisites
+- Node.js (v18+)
+- Python (v3.9+) for AI service
+- Docker and Docker Compose
+- PostgreSQL database
+
 1. Clone the repository:
     ```bash
     git clone https://github.com/Komallsood/capstone-project.git
@@ -63,20 +94,12 @@ This project is a web application designed as an educational module platform. It
     npm run dev
     python ai_model_server.py
     ```
+### Docker Deployment
 
-## Environment Variables
-- `PORT`: The port number for the application (default: 3000)
+```bash
+docker compose up
+```
 
-## Data Structures
-- **Subjects**: Each subject has an `id` (e.g., "iot"), a `name` (e.g., "Internet of Things").
-- **Modules**: Each module belongs to a subject and has an `id` (e.g., "iot-basics"), a `title` (e.g., "IoT Fundamentals"), and `content` (the learning material).
-
-
-## API Endpoints (Tentative)
-- `GET /api/login`: Returns a list of all subjects.
-- `GET /api/subjects/:id/modules`: Returns a list of modules for a specific subject.
-- `GET /api/modules/:id`: Returns the content for a specific module.
-- (Add descriptions for all other endpoints, including request parameters, response format, etc.)
 
 ## Contributing
 Contributions are welcome! If you would like to contribute to this project, please follow these guidelines:
@@ -87,6 +110,7 @@ Contributions are welcome! If you would like to contribute to this project, plea
 5. Open a pull request with a clear description of the changes.
 
 ## Setup Instructions
+
 1. **Create and Activate a Virtual Environment**
     ```bash
     python -m venv venv
@@ -120,6 +144,7 @@ Contributions are welcome! If you would like to contribute to this project, plea
     python download_model.py
     ```
     ![GPT-2 Model Setup](assets/gpt2_download.png)
+
 
 4. **Set Up the Flask Server**
     Create a script named `ai_model_server.py`:
