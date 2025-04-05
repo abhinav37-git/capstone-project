@@ -106,7 +106,7 @@ export async function POST(
     // Create the module with resources in a transaction
     const newModule = await prisma.$transaction(async (tx) => {
       // Create the module
-      const module = await tx.module.create({
+      const newModuleData = await tx.module.create({
         data: {
           name: moduleData.name,
           description: moduleData.description || "",
@@ -125,14 +125,14 @@ export async function POST(
             name: resource.name,
             url: resource.url,
             type: resource.type || "link",
-            moduleId: module.id,
+            moduleId: newModuleData.id,
           })),
         });
       }
 
       // Return the module with its resources
       return tx.module.findUnique({
-        where: { id: module.id },
+        where: { id: newModuleData.id },
         include: { resources: true },
       });
     });

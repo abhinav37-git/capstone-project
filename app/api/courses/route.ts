@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+// Define interfaces for type safety
+interface ModuleResource {
+  name?: string;
+  title?: string;
+  url: string;
+  type?: string;
+}
+
+interface CourseModule {
+  name?: string;
+  title?: string;
+  description?: string;
+  content?: string;
+  order?: number;
+  resources?: ModuleResource[];
+}
+
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
@@ -44,13 +61,13 @@ export async function POST(request: NextRequest) {
         description: description || "",
         // If additional fields like modules are provided, they can be created here too
         modules: body.modules ? {
-          create: body.modules.map((module: any, index: number) => ({
+          create: body.modules.map((module: CourseModule, index: number) => ({
             name: module.name || module.title,
             description: module.description || "",
             content: module.content || "",
             order: module.order || index,
             resources: module.resources ? {
-              create: module.resources.map((resource: any) => ({
+              create: module.resources.map((resource: ModuleResource) => ({
                 name: resource.name || resource.title,
                 url: resource.url,
                 type: resource.type || "link"

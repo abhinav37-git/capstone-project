@@ -19,14 +19,14 @@ export async function GET(
     const { courseId, moduleId } = params;
 
     // Verify that the module exists and belongs to the specified course
-    const module = await prisma.module.findUnique({
+    const moduleData = await prisma.module.findUnique({
       where: {
         id: moduleId,
         courseId: courseId,
       },
     });
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { error: "Module not found or doesn't belong to the specified course" },
         { status: 404 }
@@ -69,14 +69,14 @@ export async function POST(
     }
 
     // Verify that the module exists and belongs to the specified course
-    const module = await prisma.module.findUnique({
+    const moduleData = await prisma.module.findUnique({
       where: {
         id: moduleId,
         courseId: courseId,
       },
     });
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { error: "Module not found or doesn't belong to the specified course" },
         { status: 404 }
