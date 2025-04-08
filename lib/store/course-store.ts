@@ -5,9 +5,8 @@ export interface Module {
   id: string
   title: string
   content: string
-  progress: number
-  resources: {
-    type: 'pdf' | 'video' | 'text'
+  resources?: {
+    type: string
     url: string
     title: string
   }[]
@@ -15,81 +14,149 @@ export interface Module {
 
 export interface Course {
   id: string
-  name: string
-  modules: Module[]
-  students: string[]
-  lastUpdated: string
+  title: string
+  description: string
+  modules?: Module[]
+  enrolledStudents?: string[]
 }
 
 interface CourseStore {
   courses: Course[]
-  addCourse: (course: Course) => void
-  updateCourse: (courseId: string, updates: Partial<Course>) => void
-  addModule: (courseId: string, module: Module) => void
-  updateModule: (courseId: string, moduleId: string, updates: Partial<Module>) => void
-  enrollStudent: (courseId: string, studentId: string) => void
-  updateProgress: (courseId: string, moduleId: string, studentId: string, progress: number) => void
+  isLoading: boolean
+  error: string | null
+  fetchCourses: () => Promise<void>
+  addCourse: (course: { title: string; description: string }) => Promise<void>
+  updateCourse: (courseId: string, updates: Partial<Course>) => Promise<void>
+  addModule: (courseId: string, module: Module) => Promise<void>
+  enrollStudent: (courseId: string, studentId: string) => Promise<void>
+  updateProgress: (courseId: string, studentId: string, progress: number) => Promise<void>
 }
 
 export const useCourseStore = create<CourseStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       courses: [],
-      addCourse: (course) =>
-        set((state) => ({ courses: [...state.courses, course] })),
-      updateCourse: (courseId, updates) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId ? { ...course, ...updates } : course
-          ),
-        })),
-      addModule: (courseId, module) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId
-              ? { ...course, modules: [...course.modules, module] }
-              : course
-          ),
-        })),
-      updateModule: (courseId, moduleId, updates) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId
-              ? {
-                  ...course,
-                  modules: course.modules.map((mod) =>
-                    mod.id === moduleId ? { ...mod, ...updates } : mod
-                  ),
-                }
-              : course
-          ),
-        })),
-      enrollStudent: (courseId, studentId) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId
-              ? { ...course, students: [...course.students, studentId] }
-              : course
-          ),
-        })),
-      updateProgress: (courseId, moduleId, studentId, progress) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId
-              ? {
-                  ...course,
-                  modules: course.modules.map((mod) =>
-                    mod.id === moduleId
-                      ? { ...mod, progress }
-                      : mod
-                  ),
-                }
-              : course
-          ),
-        })),
+      isLoading: false,
+      error: null,
+
+      fetchCourses: async () => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await fetch("/api/courses")
+          if (!response.ok) throw new Error("Failed to fetch courses")
+          const data = await response.json()
+          set({ courses: data, isLoading: false })
+        } catch (error) {
+          set({ error: "Failed to fetch courses", isLoading: false })
+        }
+      },
+
+      addCourse: async (course) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await fetch("/api/courses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(course),
+          })
+          if (!response.ok) throw new Error("Failed to add course")
+          const newCourse = await response.json()
+          set((state) => ({
+            courses: [...state.courses, newCourse],
+            isLoading: false,
+          }))
+        } catch (error) {
+          set({ error: "Failed to add course", isLoading: false })
+          throw error
+        }
+      },
+
+      updateCourse: async (courseId, updates) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await fetch(`/api/courses/${courseId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updates),
+          })
+          if (!response.ok) throw new Error("Failed to update course")
+          const updatedCourse = await response.json()
+          set((state) => ({
+            courses: state.courses.map((course) =>
+              course.id === courseId ? updatedCourse : course
+            ),
+            isLoading: false,
+          }))
+        } catch (error) {
+          set({ error: "Failed to update course", isLoading: false })
+        }
+      },
+
+      addModule: async (courseId, module) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await fetch(`/api/courses/${courseId}/modules`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(module),
+          })
+          if (!response.ok) throw new Error("Failed to add module")
+          const updatedCourse = await response.json()
+          set((state) => ({
+            courses: state.courses.map((course) =>
+              course.id === courseId ? updatedCourse : course
+            ),
+            isLoading: false,
+          }))
+        } catch (error) {
+          set({ error: "Failed to add module", isLoading: false })
+        }
+      },
+
+      enrollStudent: async (courseId, studentId) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await fetch(`/api/courses/${courseId}/students`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: studentId }),
+          })
+          if (!response.ok) throw new Error("Failed to enroll student")
+          const updatedCourse = await response.json()
+          set((state) => ({
+            courses: state.courses.map((course) =>
+              course.id === courseId ? updatedCourse : course
+            ),
+            isLoading: false,
+          }))
+        } catch (error) {
+          set({ error: "Failed to enroll student", isLoading: false })
+        }
+      },
+
+      updateProgress: async (courseId, studentId, progress) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await fetch(`/api/courses/${courseId}/progress`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: studentId, progress }),
+          })
+          if (!response.ok) throw new Error("Failed to update progress")
+          const updatedCourse = await response.json()
+          set((state) => ({
+            courses: state.courses.map((course) =>
+              course.id === courseId ? updatedCourse : course
+            ),
+            isLoading: false,
+          }))
+        } catch (error) {
+          set({ error: "Failed to update progress", isLoading: false })
+        }
+      },
     }),
     {
-      name: 'course-storage',
+      name: 'course-store',
     }
   )
 )

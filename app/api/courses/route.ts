@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
 
 // Define interfaces for type safety
 interface ModuleResource {
@@ -20,15 +22,16 @@ interface CourseModule {
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const courses = await prisma.course.findMany({
       include: {
-        modules: {
-          include: {
-            resources: true
-          }
-        },
-        students: true
-      }
+        modules: true,
+        enrollments: true,
+      },
     });
     
     return NextResponse.json(courses);
@@ -43,13 +46,19 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
+    console.log("Received course creation request:", body);
     
     // Validate required fields
-    const { name, description } = body;
-    if (!name) {
+    const { title, description } = body;
+    if (!title) {
       return NextResponse.json(
-        { error: "Course name is required" },
+        { error: "Course title is required" },
         { status: 400 }
       );
     }
@@ -57,40 +66,22 @@ export async function POST(request: NextRequest) {
     // Create course in database
     const course = await prisma.course.create({
       data: {
-        name,
+        title,
         description: description || "",
-        // If additional fields like modules are provided, they can be created here too
-        modules: body.modules ? {
-          create: body.modules.map((module: CourseModule, index: number) => ({
-            name: module.name || module.title,
-            description: module.description || "",
-            content: module.content || "",
-            order: module.order || index,
-            resources: module.resources ? {
-              create: module.resources.map((resource: ModuleResource) => ({
-                name: resource.name || resource.title,
-                url: resource.url,
-                type: resource.type || "link"
-              }))
-            } : undefined
-          }))
-        } : undefined
+        teacherId: session.user.id,
       },
       include: {
-        modules: {
-          include: {
-            resources: true
-          }
-        },
-        students: true
+        modules: true,
+        enrollments: true,
       }
     });
     
+    console.log("Course created successfully:", course);
     return NextResponse.json(course, { status: 201 });
   } catch (error) {
     console.error("Error creating course:", error);
     return NextResponse.json(
-      { error: "Failed to create course" },
+      { error: `Failed to create course: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }

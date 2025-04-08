@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { toast } from "sonner"
 
 const formSchema = z
   .object({
@@ -41,36 +42,46 @@ export function SignupForm({ role }: { role: string }) {
     },
   })
 
-  // function onSubmit(values: z.infer<typeof formSchema>) {
-  //   setIsLoading(true)
-  //   // Here you would typically send a request to your authentication API
-  //   console.log(values)
-  //   setTimeout(() => {
-  //     setIsLoading(false)
-  //     router.push("/dashboard")
-  //   }, 1000)
-  // }
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Prevent teacher signups
+    if (role === "teacher") {
+      toast.error("Teachers must be added by an administrator")
+      return
+    }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    // Here you would typically send a request to your authentication API
-    console.log(values)
-    setTimeout(() => {
-      setIsLoading(false)
-      // Route based on role
-      if (role === 'admin') {
-        router.push('/admin')
-      } else if (role === 'teacher') {
-        router.push('/teacher')
-      } else {
-        router.push('/dashboard')
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          role: role.toUpperCase(),
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to register')
       }
-    }, 1000)
+
+      toast.success("Account created successfully")
+      router.push("/login?role=" + role)
+    } catch (error) {
+      console.error('Error registering:', error)
+      toast.error(`Failed to register: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
@@ -91,7 +102,7 @@ export function SignupForm({ role }: { role: string }) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your email" {...field} />
+                <Input placeholder="Enter your email" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -104,7 +115,7 @@ export function SignupForm({ role }: { role: string }) {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input placeholder="Enter your password" type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -117,14 +128,14 @@ export function SignupForm({ role }: { role: string }) {
             <FormItem>
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Confirm your password" {...field} />
+                <Input placeholder="Confirm your password" type="password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Signing up..." : "Sign Up"}
+          {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
       </form>
     </Form>
