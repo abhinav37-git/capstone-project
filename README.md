@@ -13,7 +13,7 @@
 - [Web App Demonstation](#web-app-demonstration)
 
 ## Introduction
-This project is a web application designed as an educational module platform. It provides a structured way to organize and present learning content across different subjects. Users can browse subjects and access individual modules within those subjects.
+This project is a web application designed as an educational module platform. It provides a structured way to organize and present learning content across different subjects. The platform supports multiple user roles (Admin, Teacher, Student) with role-specific features and access controls.
 
 ## Features
 ### Implemented
@@ -21,21 +21,41 @@ This project is a web application designed as an educational module platform. It
 - ✅ Server-side rendering with Next.js
 - ✅ Type-safe development with TypeScript
 - ✅ Database integration with Prisma ORM
+- ✅ Role-based authentication system
+- ✅ Teacher management system
+- ✅ Course creation and management
+- ✅ Student enrollment system
+- ✅ Progress tracking
 - ✅ Containerized deployment
 
 ### In Development
 - 🔄 AI learning assistance
-- 🔄 User authentication flows
-- 🔄 Course management system
-- 🔄 Learning progress tracking
+- 🔄 Advanced analytics dashboard
+- 🔄 Real-time notifications
+- 🔄 Content management system
 
-- **Interactive Learning Modules**: Structured courses in IoT, Blockchain, ML, and Cloud Computing
-- **Progress Tracking**: Real-time progress monitoring at course/module level (shown in `app/dashboard/page.tsx:7-53`)
-- **Admin Dashboard**: Student management and analytics (shown in `app/admin/students/page.tsx:6-58`)
-- **AI-Powered Assistant**: Integrated query system with GPT-2 integration (shown in `components/ai-agent.tsx:83-105`)
-- **Role-Based Access**: Separate interfaces for students, teachers, and admins
-- **Interactive UI Components**: Resizable panels, progress visualizations, and real-time updates
-- **Student Analytics**: Track active users and course progress (shown in `components/admin/active-students.tsx:11-49`)
+### Key Features
+- **Role-Based Access Control**:
+  - Admin: Full system access, teacher management, student oversight
+  - Teacher: Course creation, content management, student progress tracking
+  - Student: Course enrollment, progress tracking, content access
+
+- **Course Management**:
+  - Create and manage courses with modules
+  - Structured content organization
+  - Progress tracking at course and module levels
+  - Student enrollment management
+
+- **Teacher Management**:
+  - Admin-controlled teacher accounts
+  - Teacher performance monitoring
+  - Course assignment and management
+
+- **Student Features**:
+  - Course enrollment
+  - Progress tracking
+  - Module completion status
+  - Learning path visualization
 
 ## Technologies Used
 ### Frontend
@@ -52,7 +72,7 @@ This project is a web application designed as an educational module platform. It
 - **Zod** (v3.24.1) for validation
 
 ### Backend & Data
-- **Next Auth** (v4.24.11)
+- **Next Auth** (v4.24.11) for authentication
 - **Prisma ORM** (v6.4.1)
 - **PostgreSQL** database
 - **Python** (v3.9) AI model server
@@ -62,14 +82,20 @@ This project is a web application designed as an educational module platform. It
 - **ESLint** (v9)
 
 ## Project Structure
-
 ```
-├── app/                 # Next.js App Router
-├── components/          # React components
-├── prisma/              # Database configuration
-├── lib/                 # Utility functions
-├── public/              # Static assets
-└── ai_model_server.py   # Python AI service
+├── app/                    # Next.js App Router
+│   ├── admin/             # Admin dashboard and features
+│   ├── teacher/           # Teacher dashboard and features
+│   ├── dashboard/         # Student dashboard
+│   └── api/               # API routes
+├── components/            # React components
+│   ├── admin/            # Admin-specific components
+│   ├── teacher/          # Teacher-specific components
+│   └── ui/               # Shared UI components
+├── prisma/               # Database configuration
+├── lib/                  # Utility functions
+├── public/               # Static assets
+└── ai_model_server.py    # Python AI service
 ```
 
 ## Installation
@@ -85,29 +111,65 @@ This project is a web application designed as an educational module platform. It
     ```
 2. Install the required dependencies:
     ```bash
-    npm i
-    uv pip install -r requirements.txt
+    npm install
     ```
-3. Set up the environment variables (see below).
-4. Run the application:
+3. Set up the environment variables (see Environment Variables section)
+4. Initialize the database:
+    ```bash
+    npx prisma migrate dev
+    npx prisma db seed
+    ```
+5. Run the development server:
     ```bash
     npm run dev
-    python ai_model_server.py
     ```
-### Docker Deployment
 
-```bash
-docker compose up
+### Environment Variables
+Create a `.env` file in the root directory with the following variables:
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
 ```
 
+### Docker Deployment
+```bash
+docker compose up --build
+```
+
+## API Endpoints
+### Authentication
+- POST `/api/auth/register` - User registration
+- POST `/api/auth/login` - User login
+- GET `/api/auth/session` - Get current session
+
+### Admin
+- GET `/api/admin/teachers` - List all teachers
+- POST `/api/admin/teachers` - Create new teacher
+- PUT `/api/admin/teachers/:id` - Update teacher
+- DELETE `/api/admin/teachers/:id` - Delete teacher
+
+### Courses
+- GET `/api/courses` - List all courses
+- POST `/api/courses` - Create new course
+- GET `/api/courses/:id` - Get course details
+- PUT `/api/courses/:id` - Update course
+- DELETE `/api/courses/:id` - Delete course
+
+### Students
+- GET `/api/students` - List all students
+- GET `/api/students/:id` - Get student details
+- POST `/api/students/:id/enroll` - Enroll student in course
 
 ## Contributing
-Contributions are welcome! If you would like to contribute to this project, please follow these guidelines:
-1. Fork the repository.
-2. Create a new branch for your changes.
-3. Make your changes and commit them.
-4. Push your changes to your fork.
-5. Open a pull request with a clear description of the changes.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Setup Instructions
 
