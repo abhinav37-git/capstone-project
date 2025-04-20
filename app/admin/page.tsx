@@ -6,6 +6,7 @@ import { StatsCards } from "@/components/admin/stats-cards"
 import { QueryList } from "@/components/admin/query-list"
 import { ActiveStudents } from "@/components/admin/active-students"
 import { TeacherList } from "@/components/admin/teacher-list"
+import { AdminList } from "@/components/admin/admin-list"
 
 export default function AdminPage() {
   return (
@@ -13,10 +14,13 @@ export default function AdminPage() {
       <AdminNavbar />
       <main className="flex-1 container py-8">
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-        <div className="space-y-8">
+        <div className="grid gap-6">
           <StatsCards />
-          <TeacherList />
-          <ActiveStudents />
+          <div className="grid gap-6 md:grid-cols-2">
+            <ActiveStudents />
+            <TeacherList />
+          </div>
+          <AdminList />
           <QueryList />
         </div>
       </main>

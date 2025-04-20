@@ -77,6 +77,7 @@ export function FileUpload({ courseId }: FileUploadProps) {
       setTitle("")
       setDescription("")
     } catch (error) {
+      console.error("Error uploading files:", error)
       toast.error(error instanceof Error ? error.message : 'Failed to upload files')
     } finally {
       setIsUploading(false)

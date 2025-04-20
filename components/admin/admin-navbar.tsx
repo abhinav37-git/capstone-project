@@ -23,6 +23,10 @@ const navItems = [
     title: "Queries",
     href: "/admin/queries",
   },
+  {
+    title: "Administrators",
+    href: "/admin/admins",
+  },
 ]
 
 export function AdminNavbar() {

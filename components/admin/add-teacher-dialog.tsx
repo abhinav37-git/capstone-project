@@ -59,7 +59,7 @@ export function AddTeacherDialog({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/teachers", {
+      const response = await fetch("/api/admin/teachers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

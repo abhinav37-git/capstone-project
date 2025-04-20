@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://abhinav:12345678@localhost:5000/abhinav"
+  url      = "postgresql://postgres:postgres_password@localhost:5433/postgres"
 }
 
 model User {
