@@ -1,11 +1,20 @@
 import { create } from 'zustand'
 
+interface Content {
+  id: string
+  title: string
+  description: string
+  type: string
+  fileUrl: string
+}
+
 interface Module {
   id: string
   title: string
   description: string
   order: number
   progress: number
+  content: Content[]
 }
 
 export interface Course {

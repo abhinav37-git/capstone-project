@@ -11,11 +11,14 @@ import { signOut } from "next-auth/react"
 import { toast } from "sonner"
 
 export function Navbar() {
+  const [mounted, setMounted] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const pathname = usePathname()
 
+  // Only run on client side
   useEffect(() => {
+    setMounted(true)
     const isDark = localStorage.getItem("darkMode") === "true"
     setIsDarkMode(isDark)
     if (isDark) {
@@ -44,6 +47,11 @@ export function Navbar() {
     { title: "Can't access a course", solution: "Ensure you're enrolled in the course and try refreshing the page" },
     { title: "Video not playing", solution: "Check your internet connection and try a different browser" },
   ]
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null
+  }
 
   return (
     <motion.nav

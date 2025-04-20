@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { useEffect, useState } from "react"
-import { useCourseStore } from "@/lib/store/course-store"
+import { useCourseStore, Course } from "@/lib/store/course-store"
 import { toast } from "sonner"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { CourseContentViewer } from "./course-content-viewer"
+import { Button } from "@/components/ui/button"
+import { Eye } from "lucide-react"
 
 interface User {
   id: string
@@ -17,9 +21,18 @@ interface StudentDashboardProps {
   user: User
 }
 
+interface Content {
+  id: string
+  title: string
+  description: string
+  type: string
+  fileUrl: string
+}
+
 export function StudentDashboard({ user }: StudentDashboardProps) {
   const { courses, isLoading, error, fetchCourses } = useCourseStore()
   const [activeTab, setActiveTab] = useState("courses")
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
 
   useEffect(() => {
     fetchCourses()
@@ -47,6 +60,21 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
   const overallProgress = totalModules > 0 
     ? Math.round((completedModules / totalModules) * 100) 
     : 0
+
+  const handleModuleComplete = async (moduleId: string) => {
+    try {
+      const response = await fetch("/api/student/progress", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ moduleId }),
+      })
+      if (!response.ok) throw new Error("Failed to update progress")
+      await fetchCourses() // Refresh courses to update progress
+      toast.success("Progress updated successfully")
+    } catch (error) {
+      toast.error("Failed to update progress")
+    }
+  }
 
   if (isLoading) {
     return (
@@ -117,9 +145,18 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
         <TabsContent value="courses">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {enrolledCourses.map((course) => (
-              <Card key={course.id}>
+              <Card key={course.id} className="relative">
                 <CardHeader>
-                  <CardTitle>{course.title}</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    {course.title}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedCourse(course)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
@@ -176,6 +213,17 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!selectedCourse} onOpenChange={() => setSelectedCourse(null)}>
+        <DialogContent className="max-w-6xl">
+          {selectedCourse && (
+            <CourseContentViewer
+              course={selectedCourse}
+              onModuleComplete={handleModuleComplete}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
