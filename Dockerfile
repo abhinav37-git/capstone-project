@@ -2,10 +2,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files and Prisma schema first
+# Copy package files, Prisma schema, and scripts first
 COPY package*.json ./
 COPY bun.lock ./
 COPY prisma ./prisma/
+COPY scripts ./scripts/
 
 # Install dependencies (will run prisma generate via postinstall)
 RUN npm install
@@ -19,31 +20,33 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Setup for migrations
-# Note: Actual migration will run in the entrypoint script
+# Setup for migrations and admin creation
 RUN npm install -g prisma
+RUN npm install -g ts-node
 
 # Stage 2: Production image
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Copy built Next.js application
+# Copy built Next.js application and necessary files
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Setup entry point script for migrations and startup
+# Setup entry point script
 COPY scripts/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
-# Install production dependencies
+# Install production dependencies and ts-node for admin creation
 RUN npm install --production
+RUN npm install -g ts-node
 
 ENV NODE_ENV production
 EXPOSE 3000
 
-# Use entrypoint script to run migrations and start the app
+# Use entrypoint script
 ENTRYPOINT ["./entrypoint.sh"]
