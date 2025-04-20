@@ -1,0 +1,25 @@
+services:
+  # Web service configuration
+  - type: web
+    name: capstone-project
+    env: node
+    region: ohio
+    plan: starter
+    buildCommand: npm install && npx prisma generate && npm run build:prod
+    startCommand: npx prisma migrate deploy && npm run start:prod
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NEXTAUTH_URL
+        value: https://capstone-project-a320.onrender.com
+      - key: NEXTAUTH_SECRET
+        value: e212b234ec70a9a2ef90fb6f4dfa7c6f9149f6b77af8afa80830e2ff1e0a8d53
+      - key: DATABASE_URL
+        value: postgres://dbname_ddy9_user:vZ0hSykGLv7XGJivLU6CkHONjlliECK9@dpg-xxxxx.render.com:5432/dbname_ddy9
+      - key: NEXTAUTH_DEBUG
+        value: 0
+

@@ -1,51 +1,48 @@
-import { withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
-import { Role } from "@prisma/client"
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { withAuth } from "next-auth/middleware";
+import { Role } from "@prisma/client";
 
+// Use withAuth middleware for protected routes
 export default withAuth(
   function middleware(req) {
-    const token = req.nextauth.token
-    const path = req.nextUrl.pathname
+    const token = req.nextauth.token;
+    const path = req.nextUrl.pathname;
 
-    // Public paths that don't require authentication
-    if (path === "/" || path === "/login" || path === "/register") {
-      return NextResponse.next()
-    }
-
-    // Ensure user is authenticated
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", req.url))
-    }
-
-    // Role-based route protection
+    // Role-based access control
     if (path.startsWith("/admin") && token.role !== Role.ADMIN) {
-      return NextResponse.redirect(new URL("/dashboard", req.url))
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
     if (path.startsWith("/teacher") && token.role !== Role.TEACHER) {
-      return NextResponse.redirect(new URL("/dashboard", req.url))
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
     if (path === "/dashboard") {
       // Allow all authenticated users to access dashboard
-      return NextResponse.next()
+      return NextResponse.next();
     }
 
-    return NextResponse.next()
+    return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token }) => !!token
     },
   }
-)
+);
 
-// Specify which routes should be protected
+// Specify which routes should be protected and which should be excluded
 export const config = {
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",
     "/teacher/:path*",
-    "/api/:path*"
+    
+    // Protect API routes except health check
+    "/api/:path*", 
+    
+    // Exclude these paths
+    "/((?!api/health|_next/static|_next/image|favicon.ico).*)",
   ]
-} 
+};

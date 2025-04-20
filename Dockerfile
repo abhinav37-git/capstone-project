@@ -13,8 +13,15 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
+# Generate Prisma client
+RUN npx prisma generate
+
 # Build the application
 RUN npm run build
+
+# Setup for migrations
+# Note: Actual migration will run in the entrypoint script
+RUN npm install -g prisma
 
 # Stage 2: Production image
 FROM node:20-alpine AS runner
@@ -28,11 +35,15 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Setup entry point script for migrations and startup
+COPY scripts/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 # Install production dependencies
 RUN npm install --production
 
 ENV NODE_ENV production
 EXPOSE 3000
 
-# Start Next.js server
-CMD ["npm", "start"]
+# Use entrypoint script to run migrations and start the app
+ENTRYPOINT ["./entrypoint.sh"]
