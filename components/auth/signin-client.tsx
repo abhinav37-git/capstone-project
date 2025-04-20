@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react'
 import { signIn, useSession, SignInOptions } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Github, Mail, Loader2 } from 'lucide-react'
+import { Github, Mail, Loader2, AlertTriangle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 
 interface SignInClientProps {
   errorMessage: string | null
@@ -135,7 +134,7 @@ export default function SignInClient({ errorMessage, callbackUrl }: SignInClient
         {displayError && (
           <div className="px-6">
             <Alert variant="destructive" className="mb-4">
-              <ExclamationTriangleIcon className="h-4 w-4 mr-2" />
+              <AlertTriangle className="h-4 w-4 mr-2" />
               <AlertDescription>{displayError}</AlertDescription>
             </Alert>
           </div>
