@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChevronDownIcon, CheckIcon, ClockIcon, AlertCircleIcon } from "lucide-react"
@@ -431,5 +431,26 @@ export function AdminQueries() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     disabled={query.status === "RESOLVED"}
-                
+                                    onClick={() => handleUpdateStatus(query.id, "RESOLVED")}
+                                  >
+                                    Mark as Resolved
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  )
+}
+
 

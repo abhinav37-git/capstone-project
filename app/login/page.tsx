@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { LoginForm } from "@/components/login-form"
 import { SignupForm } from "@/components/signup-form"
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams()
   const [isLogin, setIsLogin] = useState(true)
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null)
@@ -53,6 +53,20 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto p-4 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="w-full max-w-md text-center">
+          Loading...
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
 

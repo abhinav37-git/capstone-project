@@ -49,15 +49,11 @@ export async function PATCH(
     }
 
     // Prepare update data
-    const updateData: any = {
+    const updateData = {
       name,
       email,
+      ...(password ? { password: await hash(password, 10) } : {})
     };
-
-    // Only update password if provided
-    if (password) {
-      updateData.password = await hash(password, 10);
-    }
 
     // Update the teacher
     const teacher = await prisma.user.update({
@@ -89,7 +85,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -102,7 +98,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = context.params;
 
     // Check if the teacher exists
     const teacher = await prisma.user.findUnique({
