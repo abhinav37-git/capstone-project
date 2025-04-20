@@ -1,16 +1,40 @@
 import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
-import prisma from "@/lib/prisma"
+import { authOptions } from "@/lib/auth"
+import { Role } from "@prisma/client"
+
+type Student = {
+  id: string
+  name: string | null
+  email: string
+  role: Role
+  studentId: string | null
+  isApproved: boolean
+  enrollments: Array<{
+    course: {
+      id: string
+      title: string
+    }
+  }>
+  progress: Array<{
+    status: string
+    module: {
+      id: string
+    }
+  }>
+}
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!session?.user || session.user.role !== "TEACHER") {
+      return NextResponse.json(
+        { error: "Only teachers can access student information" },
+        { status: 403 }
+      )
     }
 
-    // Fetch all students with their enrollments and progress
     const students = await prisma.user.findMany({
       where: {
         role: "STUDENT",
@@ -18,27 +42,42 @@ export async function GET() {
       include: {
         enrollments: {
           include: {
-            course: true,
+            course: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
           },
         },
-        progress: true,
+        progress: {
+          include: {
+            module: true,
+          },
+        },
       },
-    })
+    }) as unknown as Student[]
 
-    // Transform the data to match the expected format
+    // Calculate progress and format the response
     const formattedStudents = students.map((student) => {
-      const enrolledCourses = student.enrollments.map((enrollment) => enrollment.course.name)
-      const totalProgress = student.progress.reduce((acc, curr) => acc + curr.progress, 0)
-      const averageProgress = student.progress.length > 0 
-        ? Math.round(totalProgress / student.progress.length) 
+      // Calculate overall progress
+      const totalModules = student.progress.length
+      const completedModules = student.progress.filter(p => p.status === "COMPLETED").length
+      const progressPercentage = totalModules > 0 
+        ? Math.round((completedModules / totalModules) * 100)
         : 0
 
       return {
         id: student.id,
-        name: student.name,
+        name: student.name || "",
         email: student.email,
-        enrolledCourses,
-        progress: averageProgress,
+        studentId: student.studentId || "",
+        isApproved: student.isApproved,
+        enrolledCourses: student.enrollments.map(enrollment => ({
+          id: enrollment.course.id,
+          title: enrollment.course.title,
+        })),
+        progress: progressPercentage,
       }
     })
 

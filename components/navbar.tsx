@@ -4,9 +4,11 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { MessageCircle, Home, Moon, Sun } from "lucide-react"
+import { MessageCircle, Home, Moon, Sun, LogOut } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { motion } from "framer-motion"
+import { signOut } from "next-auth/react"
+import { toast } from "sonner"
 
 export function Navbar() {
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -25,6 +27,16 @@ export function Navbar() {
     setIsDarkMode(!isDarkMode)
     document.documentElement.classList.toggle("dark")
     localStorage.setItem("darkMode", (!isDarkMode).toString())
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut({ redirect: true, callbackUrl: "/login" })
+      toast.success("Signed out successfully")
+    } catch (error) {
+      console.error("Error signing out:", error)
+      toast.error("Failed to sign out")
+    }
   }
 
   const commonProblems = [
@@ -88,6 +100,15 @@ export function Navbar() {
         >
           {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
           <span className="sr-only">Toggle Dark Mode</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSignOut}
+          className="hover:bg-secondary transition-colors duration-200"
+        >
+          <LogOut className="h-6 w-6" />
+          <span className="sr-only">Sign Out</span>
         </Button>
       </div>
     </motion.nav>

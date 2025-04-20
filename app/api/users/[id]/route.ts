@@ -1,19 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { Module, Progress } from "@prisma/client";
+
+interface ModuleWithContent extends Module {
+  content: Array<{
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    fileUrl: string;
+  }>;
+}
 
 // GET /api/users/[id] - Get a specific user by ID
 export async function GET(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
-    
+    // Ensure params.id exists
+    if (!params.id) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: {
+        id: params.id,
+      },
       include: {
-        enrolledCourses: true,
+        enrollments: {
+          include: {
+            course: {
+              include: {
+                modules: {
+                  include: {
+                    content: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         progress: true,
+        queries: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+          },
+        },
       },
     });
 
@@ -24,7 +62,21 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(user);
+    // Transform the data to match the expected structure
+    const transformedUser = {
+      ...user,
+      studentCourses: user.enrollments.map(enrollment => ({
+        course: {
+          ...enrollment.course,
+          progress: calculateCourseProgress(
+            enrollment.course.modules as ModuleWithContent[],
+            user.progress
+          ),
+        },
+      })),
+    };
+
+    return NextResponse.json(transformedUser);
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.json(
@@ -32,6 +84,21 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+// Helper function to calculate course progress
+function calculateCourseProgress(
+  modules: ModuleWithContent[],
+  progress: Progress[]
+): number {
+  if (!modules.length) return 0;
+  
+  const completedModules = modules.filter(module => {
+    const moduleProgress = progress.find(p => p.moduleId === module.id);
+    return moduleProgress?.status === "COMPLETED";
+  });
+
+  return Math.round((completedModules.length / modules.length) * 100);
 }
 
 // PATCH /api/users/[id] - Update a specific user

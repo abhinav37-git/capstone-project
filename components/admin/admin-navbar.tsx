@@ -32,6 +32,10 @@ const navItems = [
 export function AdminNavbar() {
   const pathname = usePathname()
 
+  const handleSignOut = async () => {
+    await signOut({ redirect: true, callbackUrl: "/login" })
+  }
+
   return (
     <nav className="border-b">
       <div className="container flex h-16 items-center px-4">
@@ -59,7 +63,7 @@ export function AdminNavbar() {
         <div className="ml-auto flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={handleSignOut}
           >
             Sign Out
           </Button>

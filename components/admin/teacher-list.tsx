@@ -15,6 +15,16 @@ import { AddTeacherDialog } from "./add-teacher-dialog"
 import { EditTeacherDialog } from "./edit-teacher-dialog"
 import { toast } from "sonner"
 
+function FormattedDate({ date }: { date: string }) {
+  const [formattedDate, setFormattedDate] = useState<string>("")
+
+  useEffect(() => {
+    setFormattedDate(format(new Date(date), "MMM d, yyyy"))
+  }, [date])
+
+  return <span>{formattedDate}</span>
+}
+
 interface Teacher {
   id: string
   name: string
@@ -39,7 +49,7 @@ export function TeacherList() {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch("/api/teachers")
+      const response = await fetch("/api/admin/teachers")
       if (!response.ok) {
         throw new Error("Failed to fetch teachers")
       }
@@ -63,7 +73,7 @@ export function TeacherList() {
     }
 
     try {
-      const response = await fetch(`/api/teachers/${teacherId}`, {
+      const response = await fetch(`/api/admin/teachers?id=${teacherId}`, {
         method: "DELETE",
       })
 
@@ -115,7 +125,7 @@ export function TeacherList() {
                 )}
               </TableCell>
               <TableCell>
-                {format(new Date(teacher.createdAt), "MMM d, yyyy")}
+                <FormattedDate date={teacher.createdAt} />
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">

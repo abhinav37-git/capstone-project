@@ -4,75 +4,94 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-
-interface Course {
-  id: string
-  name: string
-}
+import { useCourseStore } from "@/lib/store/course-store"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export function EnrollmentEditor() {
   const [studentId, setStudentId] = useState("")
-  const [selectedCourse, setSelectedCourse] = useState("")
-  const [courses, setCourses] = useState<Course[]>([])
+  const [email, setEmail] = useState("")
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  
+  const { courses, fetchCourses } = useCourseStore()
 
   useEffect(() => {
-    async function fetchCourses() {
-      try {
-        const response = await fetch('/api/courses')
-        if (response.ok) {
-          const data = await response.json()
-          setCourses(data.courses)
-        }
-      } catch (error) {
-        console.error('Error fetching courses:', error)
-        toast.error('Failed to load courses')
-      }
-    }
-
     fetchCourses()
-  }, [])
+  }, [fetchCourses])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!studentId || !selectedCourse) {
-      toast.error('Please fill in all fields')
+    if (!studentId || !email || selectedCourses.length === 0) {
+      toast.error('Please fill in all fields and select at least one course')
       return
     }
 
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/courses/${selectedCourse}/students`, {
+      // First, pre-register the student with their email
+      const preRegisterResponse = await fetch('/api/students/pre-register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: studentId }),
+        body: JSON.stringify({
+          studentId,
+          email,
+        }),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to enroll student')
+      if (!preRegisterResponse.ok) {
+        const error = await preRegisterResponse.json()
+        throw new Error(error.error || 'Failed to pre-register student')
       }
 
-      toast.success('Student enrolled successfully')
+      // Then enroll them in all selected courses
+      for (const courseId of selectedCourses) {
+        const enrollResponse = await fetch(`/api/courses/${courseId}/students`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            userId: studentId,
+            email: email 
+          }),
+        })
+
+        if (!enrollResponse.ok) {
+          const error = await enrollResponse.json()
+          throw new Error(error.error || 'Failed to enroll student in all courses')
+        }
+      }
+
+      toast.success('Student pre-registered and enrolled successfully')
       setStudentId("")
-      setSelectedCourse("")
+      setEmail("")
+      setSelectedCourses([])
     } catch (error) {
-      console.error('Error enrolling student:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to enroll student')
+      console.error('Error:', error)
+      toast.error(error instanceof Error ? error.message : 'Operation failed')
     } finally {
       setIsLoading(false)
     }
   }
 
+  const toggleCourse = (courseId: string) => {
+    setSelectedCourses(current => 
+      current.includes(courseId)
+        ? current.filter(id => id !== courseId)
+        : [...current, courseId]
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enroll Student</CardTitle>
+        <CardTitle>Pre-register & Enroll Student</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,22 +107,72 @@ export function EnrollmentEditor() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="course">Course</Label>
-            <Select value={selectedCourse} onValueChange={setSelectedCourse} disabled={isLoading}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a course" />
-              </SelectTrigger>
-              <SelectContent>
+            <Label htmlFor="email">Student Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter student email"
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Selected Courses</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {selectedCourses.map((courseId) => {
+                const course = courses.find(c => c.id === courseId)
+                return (
+                  <Badge key={courseId} variant="secondary" className="flex items-center gap-1">
+                    {course?.title}
+                    <button
+                      type="button"
+                      onClick={(e) => toggleCourse(courseId)}
+                      className="ml-1 hover:bg-muted rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )
+              })}
+            </div>
+            <div className="border rounded-md">
+              <div className="p-2">
+                <Input
+                  placeholder="Search courses..."
+                  className="h-8 w-full bg-transparent px-2"
+                  type="search"
+                />
+              </div>
+              <div className="max-h-[200px] overflow-auto">
                 {courses.map((course) => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.name}
-                  </SelectItem>
+                  <div
+                    key={course.id}
+                    className="flex items-center space-x-2 p-2 hover:bg-accent cursor-pointer"
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault()
+                      toggleCourse(course.id)
+                    }}
+                  >
+                    <Checkbox
+                      checked={selectedCourses.includes(course.id)}
+                      onCheckedChange={() => toggleCourse(course.id)}
+                      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                    />
+                    <span>{course.title}</span>
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
+                {courses.length === 0 && (
+                  <div className="p-2 text-center text-sm text-muted-foreground">
+                    No courses found
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Enrolling..." : "Enroll Student"}
+            {isLoading ? "Processing..." : "Pre-register & Enroll Student"}
           </Button>
         </form>
       </CardContent>

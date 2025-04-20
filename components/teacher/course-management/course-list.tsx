@@ -4,39 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Edit, Trash } from "lucide-react"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-
-interface Course {
-  id: string
-  title: string
-  description: string
-  modules: { id: string }[]
-  enrollments: { id: string }[]
-  updatedAt: string
-}
+import { useEffect } from "react"
+import { useCourseStore } from "@/lib/store/course-store"
 
 export function CourseList() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { courses, isLoading, error, fetchCourses } = useCourseStore()
 
   useEffect(() => {
-    async function fetchCourses() {
-      try {
-        const response = await fetch('/api/courses')
-        if (!response.ok) throw new Error('Failed to fetch courses')
-        const data = await response.json()
-        setCourses(data)
-      } catch (error) {
-        console.error('Error fetching courses:', error)
-        toast.error('Failed to load courses')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     fetchCourses()
-  }, [])
+  }, [fetchCourses])
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Course List</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-red-500">{error}</div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -46,6 +35,19 @@ export function CourseList() {
         </CardHeader>
         <CardContent>
           <div className="text-center">Loading courses...</div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (courses.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Course List</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground">No courses found</div>
         </CardContent>
       </Card>
     )
@@ -61,9 +63,7 @@ export function CourseList() {
           <TableHeader>
             <TableRow>
               <TableHead>Course Name</TableHead>
-              <TableHead>Modules</TableHead>
-              <TableHead>Students</TableHead>
-              <TableHead>Last Updated</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -71,9 +71,7 @@ export function CourseList() {
             {courses.map((course) => (
               <TableRow key={course.id}>
                 <TableCell>{course.title}</TableCell>
-                <TableCell>{course.modules.length}</TableCell>
-                <TableCell>{course.enrollments.length}</TableCell>
-                <TableCell>{new Date(course.updatedAt).toLocaleDateString()}</TableCell>
+                <TableCell>{course.description}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button variant="ghost" size="icon">

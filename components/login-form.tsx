@@ -1,13 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation" // Add this import
+import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { toast } from "sonner"
+import { Role } from "@prisma/client"
 
 const formSchema = z.object({
   email: z.string().email({
@@ -30,21 +33,51 @@ export function LoginForm({ role }: { role: string }) {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    // Here you would typically send a request to your authentication API
-    console.log(values)
-    setTimeout(() => {
-      setIsLoading(false)
-      // Route based on role
-      if (role === 'admin') {
-        router.push('/admin')
-      } else if (role === 'teacher') {
-        router.push('/teacher')
-      } else {
-        router.push('/dashboard')
+    try {
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        role: role.toUpperCase() as Role,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        if (result.error === "Invalid role for this user") {
+          toast.error("You don't have permission to access this section")
+        } else if (result.error === "Account not approved yet") {
+          toast.error("Your account is pending approval")
+        } else {
+          toast.error("Invalid email or password")
+        }
+        return
       }
-    }, 1000)
+
+      toast.success("Logged in successfully")
+      
+      // Route based on role
+      switch(role.toUpperCase()) {
+        case Role.ADMIN:
+          router.push('/admin')
+          break
+        case Role.TEACHER:
+          router.push('/teacher')
+          break
+        case Role.STUDENT:
+          router.push('/dashboard')
+          break
+        default:
+          router.push('/dashboard')
+      }
+      
+      router.refresh()
+    } catch (error) {
+      console.error("Login error:", error)
+      toast.error("Something went wrong")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

@@ -28,9 +28,16 @@ export async function GET() {
     }
 
     const courses = await prisma.course.findMany({
-      include: {
-        modules: true,
-        enrollments: true,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+      },
+      where: {
+        teacherId: session.user.id,
+      },
+      orderBy: {
+        title: 'asc',
       },
     });
     

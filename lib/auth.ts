@@ -3,14 +3,19 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
 import prisma from "./prisma";
+import { Role } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
-    signIn: "/auth/login",
+    signIn: '/login',
+    signOut: '/login',
+    error: '/auth/error',
   },
   providers: [
     CredentialsProvider({
@@ -18,15 +23,25 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password || !credentials?.role) {
           throw new Error("Invalid credentials");
         }
 
         const user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            password: true,
+            role: true,
+            studentId: true,
+            isApproved: true,
           },
         });
 
@@ -43,11 +58,22 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
+        // Verify role matches
+        if (user.role !== credentials.role) {
+          throw new Error("Invalid role for this user");
+        }
+
+        // For students, verify they are approved
+        if (user.role === Role.STUDENT && !user.isApproved) {
+          throw new Error("Account not approved yet");
+        }
+
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.name || "",
           role: user.role,
+          studentId: user.studentId || undefined,
         };
       },
     }),
@@ -56,32 +82,29 @@ export const authOptions: NextAuthOptions = {
     async session({ token, session }) {
       if (token) {
         session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.role = token.role;
+        session.user.name = token.name || "";
+        session.user.email = token.email || "";
+        session.user.role = token.role as Role;
+        if (token.studentId) {
+          session.user.studentId = token.studentId;
+        }
       }
       return session;
     },
-    async jwt({ token, user }) {
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      });
-
-      if (!dbUser) {
-        if (user) {
-          token.id = user?.id;
-        }
-        return token;
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && session) {
+        return { ...token, ...session.user };
       }
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        role: dbUser.role,
-      };
+      if (user) {
+        token.id = user.id;
+        token.role = user.role as Role;
+        if (user.studentId) {
+          token.studentId = user.studentId;
+        }
+      }
+
+      return token;
     },
   },
 }; 

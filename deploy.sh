@@ -9,9 +9,9 @@
 set -e
 
 # Set variables - Customize these
-POSTGRES_PASSWORD="postgres_password" # Use a secure password in production
+POSTGRES_PASSWORD="postgres1234" # Use a secure password in production
 APP_SECRET=$(openssl rand -base64 32)  # Auto-generate a secure secret
-GITHUB_REPO="https://github.com/yourusername/capstone-project.git" # Update with your actual repo
+GITHUB_REPO="https://github.com/Komallsood/capstone-project.git" # Update with your actual repo
 
 # Get the EC2 public IP address automatically
 PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)

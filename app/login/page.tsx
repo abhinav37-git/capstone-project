@@ -1,17 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { LoginForm } from "@/components/login-form"
 import { SignupForm } from "@/components/signup-form"
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { role?: string }
-}) {
+export default function LoginPage() {
+  const searchParams = useSearchParams()
   const [isLogin, setIsLogin] = useState(true)
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null)
-  const role = searchParams.role || "student"
+  const role = searchParams.get("role") || "student"
 
   useEffect(() => {
     if (role === "admin") {

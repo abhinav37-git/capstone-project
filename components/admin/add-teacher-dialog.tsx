@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { useSession } from "next-auth/react"
 import {
   Dialog,
   DialogContent,
@@ -45,7 +46,13 @@ export function AddTeacherDialog({
   onOpenChange,
   onSuccess,
 }: AddTeacherDialogProps) {
+  const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,7 +63,17 @@ export function AddTeacherDialog({
     },
   })
 
+  // Don't render anything until mounted to prevent hydration mismatch
+  if (!mounted) return null
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (status === "loading") return
+
+    if (!session?.user || session.user.role !== "ADMIN") {
+      toast.error("You must be logged in as an admin to perform this action")
+      return
+    }
+
     setIsLoading(true)
     try {
       const response = await fetch("/api/admin/teachers", {
@@ -67,9 +84,10 @@ export function AddTeacherDialog({
         body: JSON.stringify(values),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to create teacher")
+        throw new Error(data.error || "Failed to create teacher")
       }
 
       toast.success("Teacher created successfully")
@@ -139,7 +157,7 @@ export function AddTeacherDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || status === "loading"}>
                 {isLoading ? "Creating..." : "Create Teacher"}
               </Button>
             </div>

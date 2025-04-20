@@ -6,8 +6,6 @@ import { Progress } from "@/components/ui/progress"
 import { useEffect, useState } from "react"
 import { useCourseStore } from "@/lib/store/course-store"
 import { toast } from "sonner"
-import { StudentQueryForm } from "./student-query-form"
-import { StudentQueries } from "./student-queries"
 
 interface User {
   id: string
@@ -27,15 +25,28 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
     fetchCourses()
   }, [fetchCourses])
 
+  // Filter courses that the student is enrolled in
   const enrolledCourses = courses.filter((course) =>
-    course.enrolledStudents.includes(user.id)
+    course.enrollments.some(enrollment => enrollment.studentId === user.id)
   )
 
   const totalCourses = enrolledCourses.length
+  const completedCourses = enrolledCourses.filter(course => 
+    course.modules.every(module => module.progress === 100)
+  ).length
+
   const totalModules = enrolledCourses.reduce(
     (acc, course) => acc + course.modules.length,
     0
   )
+  const completedModules = enrolledCourses.reduce(
+    (acc, course) => acc + course.modules.filter(m => m.progress === 100).length,
+    0
+  )
+
+  const overallProgress = totalModules > 0 
+    ? Math.round((completedModules / totalModules) * 100) 
+    : 0
 
   if (isLoading) {
     return (
@@ -72,21 +83,31 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+            <CardTitle className="text-sm font-medium">Completed Courses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCourses}</div>
+            <div className="text-2xl font-bold">{completedCourses} / {totalCourses}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Modules</CardTitle>
+            <CardTitle className="text-sm font-medium">Completed Modules</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalModules}</div>
+            <div className="text-2xl font-bold">{completedModules} / {totalModules}</div>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Overall Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Progress value={overallProgress} className="w-full" />
+          <p className="text-sm text-muted-foreground mt-2">{overallProgress}% complete</p>
+        </CardContent>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -112,8 +133,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
                           (course.modules.filter((m) => m.progress === 100).length /
                             course.modules.length) *
                             100
-                        )}
-                        %
+                        )}%
                       </span>
                     </div>
                     <Progress
