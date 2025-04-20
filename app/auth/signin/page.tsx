@@ -1,90 +1,86 @@
-'use client';
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { redirect } from "next/navigation"
+import SignInClient from "@/components/auth/signin-client"
+import { Session } from "next-auth"
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-
-export default function SignIn() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        toast.error('Invalid credentials');
-        return;
-      }
-
-      router.push('/dashboard');
-      router.refresh();
-    } catch (error) {
-      toast.error('Something went wrong');
-    } finally {
-      setIsLoading(false);
+// Server component for initial auth check
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: { error?: string; callbackUrl?: string }
+}) {
+  // Check for session server-side first
+  const session = await getServerSession(authOptions)
+  
+  // If already authenticated, redirect to appropriate page based on role
+  if (session?.user) {
+    // Use explicit role-based redirects to prevent loops
+    if (session.user.role === "ADMIN") {
+      return redirect('/admin')
+    } else if (session.user.role === "TEACHER") {
+      return redirect('/teacher')
+    } else {
+      return redirect('/dashboard')
     }
   }
+  
+  // Parse error messages for better user experience
+  const errorMessage = getErrorMessage(searchParams.error)
+  
+  // Safe callback URL handling - prevent open redirect vulnerabilities
+  const callbackUrl = validateCallbackUrl(searchParams.callbackUrl)
+  
+  // Render client component with proper props
+  return <SignInClient errorMessage={errorMessage} callbackUrl={callbackUrl} />
+}
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle>Sign In</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={onSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  );
-} 
+// Helper function to get meaningful error messages
+function getErrorMessage(error?: string): string | null {
+  if (!error) return null
+  
+  const errorMessages: Record<string, string> = {
+    'OAuthSignin': 'Error starting OAuth sign-in',
+    'OAuthCallback': 'Error completing OAuth sign-in',
+    'OAuthCreateAccount': 'Error creating OAuth account',
+    'EmailCreateAccount': 'Error creating email account',
+    'Callback': 'Error during callback processing',
+    'OAuthAccountNotLinked': 'Email already in use with different provider',
+    'EmailSignin': 'Error sending email signin link',
+    'CredentialsSignin': 'Invalid credentials',
+    'SessionRequired': 'Please sign in to access this page',
+    'InvalidSession': 'Your session is invalid or has expired',
+    'server_error': 'Server error occurred',
+    'default': 'An error occurred during authentication'
+  }
+  
+  return errorMessages[error] || errorMessages.default
+}
+
+// Helper function to validate callback URL to prevent open redirect vulnerabilities
+function validateCallbackUrl(url?: string): string {
+  // If no URL provided, use dashboard as default
+  if (!url) return '/dashboard'
+  
+  try {
+    // For absolute URLs, check if they're on the same origin
+    if (url.startsWith('http')) {
+      const urlObj = new URL(url)
+      // Only allow URLs from our domain - replace with your actual domain in production
+      const allowedHosts = ['localhost', 'capstone-project-a320.onrender.com']
+      if (!allowedHosts.includes(urlObj.hostname)) {
+        return '/dashboard'
+      }
+    }
+    
+    // For relative URLs, make sure they start with /
+    if (!url.startsWith('/')) {
+      url = '/' + url
+    }
+    
+    return url
+  } catch (e) {
+    // If URL parsing fails, return a safe default
+    return '/dashboard'
+  }
+}

@@ -7,6 +7,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 import { JWT } from 'next-auth/jwt';
 import { Adapter } from 'next-auth/adapters';
+import { AdapterUser } from "next-auth/adapters";
 
 // Define session and user types
 declare module 'next-auth' {
@@ -25,6 +26,13 @@ declare module 'next-auth' {
     role: string;
   }
 }
+// Define the expected shape of the token
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id?: string;
+    role?: string;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -32,6 +40,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           id: profile.sub,
@@ -45,6 +54,7 @@ export const authOptions: NextAuthOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           id: String(profile.id),
@@ -97,27 +107,46 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }): Promise<JWT> {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
+    async jwt({ token, user, account, profile }: { 
+      token: JWT; 
+      user?: User; 
+      account?: any; 
+      profile?: any; 
+    }): Promise<JWT> {
+      try {
+        if (user) {
+          // Add user information to the token when signing in
+          token.id = user.id;
+          token.role = user.role;
+        }
+        return token;
+      } catch (error) {
+        console.error("JWT callback error:", error);
+        return token;
       }
-      return token;
     },
     async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
-      if (token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+      try {
+        if (token && session.user) {
+          // Add token information to the session
+          session.user.id = token.id as string;
+          session.user.role = token.role as string;
+        }
+        return session;
+      } catch (error) {
+        console.error("Session callback error:", error);
+        return session;
       }
-      return session;
     },
   },
   pages: {
     signIn: '/auth/signin',
     signOut: '/auth/signout',
     error: '/auth/error',
+    newUser: '/auth/register',
   },
   debug: process.env.NODE_ENV === 'development',
   logger: {

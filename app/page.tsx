@@ -1,22 +1,15 @@
-"use client"
-
-import { useSession } from "next-auth/react"
+import { getServerSession } from "next-auth/next"
 import { redirect } from "next/navigation"
-import { LoginSelection } from "@/components/login-selection"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import HomeClientPage from "@/components/home-client"
 
-export default function Home() {
-  const { data: session, status } = useSession()
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
+// This is a server component that handles initial redirect
+export default async function Home() {
+  // Server-side session check
+  const session = await getServerSession(authOptions)
+  
+  // If the user is authenticated, redirect based on role
   if (session) {
-    // Redirect based on user role
     switch (session.user.role) {
       case "ADMIN":
         redirect("/admin")
@@ -26,11 +19,7 @@ export default function Home() {
         redirect("/dashboard")
     }
   }
-
-  return (
-    <div className="container mx-auto p-4 flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <LoginSelection />
-    </div>
-  )
+  
+  // If not authenticated, render the client component
+  return <HomeClientPage />
 }
-

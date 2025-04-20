@@ -22,4 +22,16 @@ services:
         value: postgres://dbname_ddy9_user:vZ0hSykGLv7XGJivLU6CkHONjlliECK9@dpg-xxxxx.render.com:5432/dbname_ddy9
       - key: NEXTAUTH_DEBUG
         value: 0
+        
+      # OAuth Provider Credentials - Google
+      - key: GOOGLE_CLIENT_ID
+        sync: false # Set this manually in the Render dashboard
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # Set this manually in the Render dashboard
+        
+      # OAuth Provider Credentials - GitHub
+      - key: GITHUB_CLIENT_ID
+        sync: false # Set this manually in the Render dashboard
+      - key: GITHUB_CLIENT_SECRET
+        sync: false # Set this manually in the Render dashboard
 
