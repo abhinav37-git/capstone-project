@@ -4,23 +4,50 @@ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { LoginForm } from "@/components/login-form"
 import { SignupForm } from "@/components/signup-form"
+import { toast } from "sonner"
 
 function LoginContent() {
   const searchParams = useSearchParams()
   const [isLogin, setIsLogin] = useState(true)
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null)
+  const [canCreateAdmin, setCanCreateAdmin] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState(false)
   const role = searchParams.get("role") || "student"
 
   useEffect(() => {
     if (role === "admin") {
+      setIsLoading(true)
       fetch("/api/admin/check")
-        .then((res) => res.json())
-        .then((data) => setHasAdmin(data.hasAdmin))
-        .catch((error) => console.error("Error checking admin status:", error))
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to check admin status")
+          }
+          return res.json()
+        })
+        .then((data) => {
+          setHasAdmin(data.hasAdmin)
+          setCanCreateAdmin(data.canCreateAdmin)
+        })
+        .catch((error) => {
+          console.error("Error checking admin status:", error)
+          toast.error("Failed to check admin status. Please try again.")
+        })
+        .finally(() => setIsLoading(false))
     }
   }, [role])
 
-  const showSignupOption = role !== "admin" || (role === "admin" && hasAdmin === false)
+  const showSignupOption = role !== "admin" || (role === "admin" && canCreateAdmin)
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="w-full max-w-md text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Checking admin status...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto p-4 flex items-center justify-center min-h-[calc(100vh-4rem)]">
@@ -61,7 +88,8 @@ export default function LoginPage() {
     <Suspense fallback={
       <div className="container mx-auto p-4 flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="w-full max-w-md text-center">
-          Loading...
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>
     }>

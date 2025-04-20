@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { hash } from "bcrypt";
 import * as z from "zod";
 
@@ -35,6 +37,24 @@ export async function POST(request: Request) {
         { error: "User with this email already exists" },
         { status: 409 }
       );
+    }
+
+    // For admin creation, check if allowed
+    if (role === "ADMIN") {
+      const session = await getServerSession(authOptions);
+      const adminCount = await prisma.user.count({
+        where: { role: "ADMIN" }
+      });
+
+      // Only allow admin creation if:
+      // 1. No admin exists yet, or
+      // 2. Current user is an admin
+      if (adminCount > 0 && session?.user?.role !== "ADMIN") {
+        return NextResponse.json(
+          { error: "Only existing administrators can create new admin accounts" },
+          { status: 403 }
+        );
+      }
     }
 
     // For students, verify pre-registration
@@ -85,7 +105,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error registering user:", error);
     return NextResponse.json(
-      { error: "Failed to register user" },
+      { 
+        error: "Failed to register user",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     );
   }
