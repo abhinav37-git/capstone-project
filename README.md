@@ -1,264 +1,152 @@
-# Capstone Project Documentation: Educational Module Platform
+# 🎓 Educational Platform
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Data Structures](#data-structures)
-- [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [Setup Instructions](#setup-instructions)
-- [Web App Demonstation](#web-app-demonstration)
+A modern, full-stack educational platform built with Next.js 15, featuring role-based access control, course management, and student progress tracking.
 
-## Introduction
-This project is a web application designed as an educational module platform. It provides a structured way to organize and present learning content across different subjects. The platform supports multiple user roles (Admin, Teacher, Student) with role-specific features and access controls.
+![Next.js](https://img.shields.io/badge/next.js-15.1.6-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/react-19.0.0-blue?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/typescript-5.0.0-blue?style=for-the-badge&logo=typescript)
+![Prisma](https://img.shields.io/badge/prisma-6.6.0-blue?style=for-the-badge&logo=prisma)
+![PostgreSQL](https://img.shields.io/badge/postgresql-16.0-blue?style=for-the-badge&logo=postgresql)
 
-## Features
-### Implemented
-- ✅ Modern UI with Radix components
-- ✅ Server-side rendering with Next.js
-- ✅ Type-safe development with TypeScript
-- ✅ Database integration with Prisma ORM
-- ✅ Role-based authentication system
-- ✅ Teacher management system
-- ✅ Course creation and management
-- ✅ Student enrollment system
-- ✅ Progress tracking
-- ✅ Containerized deployment
+## ✨ Features
 
-### In Development
-- 🔄 AI learning assistance
-- 🔄 Advanced analytics dashboard
-- 🔄 Real-time notifications
-- 🔄 Content management system
+### 🎯 Core Features
+- **Role-Based Access Control**
+  - Admin dashboard for system management
+  - Teacher portal for course creation and management
+  - Student dashboard for learning and progress tracking
 
-### Key Features
-- **Role-Based Access Control**:
-  - Admin: Full system access, teacher management, student oversight
-  - Teacher: Course creation, content management, student progress tracking
-  - Student: Course enrollment, progress tracking, content access
+- **Course Management**
+  - Create and organize courses with modules
+  - Upload and manage educational content
+  - Track student progress and engagement
 
-- **Course Management**:
-  - Create and manage courses with modules
-  - Structured content organization
-  - Progress tracking at course and module levels
-  - Student enrollment management
+- **Student Experience**
+  - Course enrollment system
+  - Progress tracking and analytics
+  - Interactive learning interface
 
-- **Teacher Management**:
-  - Admin-controlled teacher accounts
-  - Teacher performance monitoring
-  - Course assignment and management
+### 🛠️ Technical Stack
+- **Frontend**
+  - Next.js 15 with App Router
+  - React 19 with TypeScript
+  - TailwindCSS for styling
+  - Radix UI components
+  - Framer Motion animations
 
-- **Student Features**:
-  - Course enrollment
-  - Progress tracking
-  - Module completion status
-  - Learning path visualization
+- **Backend**
+  - Next.js API routes
+  - Prisma ORM for database operations
+  - PostgreSQL database
+  - NextAuth.js for authentication
 
-## Technologies Used
-### Frontend
-- **Next.js** (v15.1.6) with App Router
-- **React** (v19.0.0)
-- **TypeScript** (v5)
-- **TailwindCSS** (v3.4.1)
-- **Radix UI** components
-- **Framer Motion** (v12.0.6)
+- **DevOps**
+  - Docker containerization
+  - Multi-stage builds
+  - Automated deployment
 
-### State Management & Forms
-- **Zustand** (v5.0.3)
-- **React Hook Form** (v7.54.2)
-- **Zod** (v3.24.1) for validation
+## 🚀 Getting Started
 
-### Backend & Data
-- **Next Auth** (v4.24.11) for authentication
-- **Prisma ORM** (v6.4.1)
-- **PostgreSQL** database
-- **Python** (v3.9) AI model server
-
-### DevOps
-- **Docker** multi-stage containerization
-- **ESLint** (v9)
-
-## Project Structure
-```
-├── app/                    # Next.js App Router
-│   ├── admin/             # Admin dashboard and features
-│   ├── teacher/           # Teacher dashboard and features
-│   ├── dashboard/         # Student dashboard
-│   └── api/               # API routes
-├── components/            # React components
-│   ├── admin/            # Admin-specific components
-│   ├── teacher/          # Teacher-specific components
-│   └── ui/               # Shared UI components
-├── prisma/               # Database configuration
-├── lib/                  # Utility functions
-├── public/               # Static assets
-└── ai_model_server.py    # Python AI service
-```
-
-## Installation
 ### Prerequisites
-- Node.js (v18+)
-- Python (v3.9+) for AI service
-- Docker and Docker Compose
-- PostgreSQL database
+- Node.js 18+
+- PostgreSQL
+- Docker (optional)
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Komallsood/capstone-project.git
-    ```
-2. Install the required dependencies:
-    ```bash
-    npm install
-    ```
-3. Set up the environment variables (see Environment Variables section)
-4. Initialize the database:
-    ```bash
-    npx prisma migrate dev
-    npx prisma db seed
-    ```
-5. Run the development server:
-    ```bash
-    npm run dev
-    ```
+### Installation
 
-### Environment Variables
-Create a `.env` file in the root directory with the following variables:
-```env
-DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key"
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Komallsood/capstone-project.git
+   cd capstone-project
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file with:
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key"
+   ```
+
+4. **Initialize the database**
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
+
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
 ### Docker Deployment
 ```bash
-docker compose up --build
+docker build -t capstone-project .
+docker run -p 3000:3000 \
+  -e DATABASE_URL="your-database-url" \
+  -e NEXTAUTH_URL="your-nextauth-url" \
+  -e NEXTAUTH_SECRET="your-nextauth-secret" \
+  capstone-project
 ```
 
-## API Endpoints
+## 📁 Project Structure
+```
+├── app/                    # Next.js App Router
+│   ├── admin/             # Admin routes
+│   ├── teacher/           # Teacher routes
+│   ├── dashboard/         # Student dashboard
+│   └── api/               # API routes
+├── components/            # React components
+│   ├── admin/            # Admin components
+│   ├── teacher/          # Teacher components
+│   └── ui/               # Shared UI components
+├── prisma/               # Database schema
+├── lib/                  # Utility functions
+└── public/               # Static assets
+```
+
+## 🔐 Authentication
+The platform uses NextAuth.js for authentication with the following roles:
+- **Admin**: Full system access
+- **Teacher**: Course management
+- **Student**: Course access and learning
+
+## 📚 API Documentation
+
 ### Authentication
-- POST `/api/auth/register` - User registration
-- POST `/api/auth/login` - User login
-- GET `/api/auth/session` - Get current session
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/session` - Get current session
 
 ### Admin
-- GET `/api/admin/teachers` - List all teachers
-- POST `/api/admin/teachers` - Create new teacher
-- PUT `/api/admin/teachers/:id` - Update teacher
-- DELETE `/api/admin/teachers/:id` - Delete teacher
+- `GET /api/admin/teachers` - List teachers
+- `POST /api/admin/teachers` - Create teacher
+- `PUT /api/admin/teachers/:id` - Update teacher
+- `DELETE /api/admin/teachers/:id` - Delete teacher
 
 ### Courses
-- GET `/api/courses` - List all courses
-- POST `/api/courses` - Create new course
-- GET `/api/courses/:id` - Get course details
-- PUT `/api/courses/:id` - Update course
-- DELETE `/api/courses/:id` - Delete course
+- `GET /api/courses` - List courses
+- `POST /api/courses` - Create course
+- `GET /api/courses/:id` - Get course details
+- `PUT /api/courses/:id` - Update course
+- `DELETE /api/courses/:id` - Delete course
 
-### Students
-- GET `/api/students` - List all students
-- GET `/api/students/:id` - Get student details
-- POST `/api/students/:id/enroll` - Enroll student in course
-
-## Contributing
+## 🤝 Contributing
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Setup Instructions
-
-1. **Create and Activate a Virtual Environment**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate
-    ```
-2. **Install Required Python Packages**
-    See the `requirements.txt` file available with the following content:
-    ```plaintext
-    Flask
-    Flask-CORS
-    transformers
-    ```
-    Install the dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3. **Download and Save the GPT-2 Model Locally**
-    Create a script named `download_model.py`:
-    ```python
-    from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-    model_name = "gpt2"
-    model = GPT2LMHeadModel.from_pretrained(model_name)
-    tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-
-    model.save_pretrained("./model")
-    tokenizer.save_pretrained("./model")
-    ```
-    Run the script to download the model:
-    ```bash
-    python download_model.py
-    ```
-    ![GPT-2 Model Setup](assets/gpt2_download.png)
-
-
-4. **Set Up the Flask Server**
-    Create a script named `ai_model_server.py`:
-    ```python
-    from flask import Flask, request, jsonify
-    from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-    app = Flask(__name__)
-    model = GPT2LMHeadModel.from_pretrained("./model")
-    tokenizer = GPT2Tokenizer.from_pretrained("./model")
-
-    @app.route('/generate', methods=['POST'])
-    def generate():
-        input_text = request.json.get('input_text')
-        inputs = tokenizer.encode(input_text, return_tensors='pt')
-        outputs = model.generate(inputs, max_length=50)
-        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return jsonify({'generated_text': generated_text})
-
-    if __name__ == '__main__':
-        app.run(port=5000)
-    ```
-    Run the Flask server:
-    ```bash
-    python ai_model_server.py
-    ```
-    ![Flask Server Running](assets/flask_server.png)
-
-5. **Run the React Application**
-    Ensure the React application is correctly configured to interact with the Flask server. Start the React application:
-    ```bash
-    npm start
-    ```
-    ![React Application Running](assets/react_app.png)
-
-
-### Web App Demonstration
-
-#### Login Page
-![Login Page](assets/login_page.png)
-
-#### Student Login
-![Student Login](assets/student_login.png)
-
-#### Module Dashboard
-![Dashboard](assets/dashboard_page.png)
-
-#### Enrolled Subjects Panel
-![Module Content](assets/enrolled_subjects.png)
-
-#### Troubleshoot chat window
-![Troubleshoot](assets/troubleshoot.png)
-
-### AI Agent query window
-![AI Agent](assets/ai_agent_ui.png)
+## 🙏 Acknowledgments
+- Next.js team for the amazing framework
+- Prisma team for the excellent ORM
+- All contributors and maintainers
