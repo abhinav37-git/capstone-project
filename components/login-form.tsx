@@ -21,7 +21,12 @@ const formSchema = z.object({
   }),
 })
 
-export function LoginForm({ role }: { role: string }) {
+interface LoginFormProps {
+  role: string;
+  callbackUrl?: string;
+}
+
+export function LoginForm({ role, callbackUrl = '/dashboard' }: LoginFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -39,36 +44,51 @@ export function LoginForm({ role }: { role: string }) {
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
-        role: role.toUpperCase() as Role,
+        role: role.toUpperCase(),
         redirect: false,
+        callbackUrl,
       })
 
       if (result?.error) {
+        console.error("Login error:", result.error)
         if (result.error === "Invalid role for this user") {
           toast.error("You don't have permission to access this section")
         } else if (result.error === "Account not approved yet") {
           toast.error("Your account is pending approval")
+        } else if (result.error === "Missing required fields") {
+          toast.error("Please fill in all required fields")
         } else {
           toast.error("Invalid email or password")
         }
         return
       }
 
+      if (!result?.ok) {
+        toast.error("Failed to sign in")
+        return
+      }
+
       toast.success("Logged in successfully")
       
-      // Route based on role
-      switch(role.toUpperCase()) {
-        case Role.ADMIN:
-          router.push('/admin')
-          break
-        case Role.TEACHER:
-          router.push('/teacher')
-          break
-        case Role.STUDENT:
-          router.push('/dashboard')
-          break
-        default:
-          router.push('/dashboard')
+      // Use the provided callback URL or determine based on role
+      if (result.url) {
+        router.push(result.url)
+      } else {
+        // Fallback to role-based routing
+        const userRole = role.toUpperCase() as Role
+        switch(userRole) {
+          case Role.ADMIN:
+            router.push('/admin')
+            break
+          case Role.TEACHER:
+            router.push('/teacher')
+            break
+          case Role.STUDENT:
+            router.push('/dashboard')
+            break
+          default:
+            router.push('/dashboard')
+        }
       }
       
       router.refresh()
@@ -90,7 +110,12 @@ export function LoginForm({ role }: { role: string }) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your email" {...field} />
+                <Input 
+                  placeholder="Enter your email" 
+                  type="email"
+                  autoComplete="email"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -103,7 +128,12 @@ export function LoginForm({ role }: { role: string }) {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

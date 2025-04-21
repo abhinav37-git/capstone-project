@@ -1,4 +1,4 @@
-# 🎓 Educational Platform
+# 🎓 Smart Module Dashboard (An interactive classroom learning)
 
 A modern, full-stack educational platform built with Next.js 15, featuring role-based access control, course management, and student progress tracking.
 
@@ -135,6 +135,28 @@ The platform uses NextAuth.js for authentication with the following roles:
 - `GET /api/courses/:id` - Get course details
 - `PUT /api/courses/:id` - Update course
 - `DELETE /api/courses/:id` - Delete course
+
+## 📸 Screenshots
+
+### Authentication
+| Login Page | Registration Page |
+|------------|------------------|
+| ![Login Page](./assets/login.png) | ![Registration Page](./assets/register.png) |
+
+### Admin Dashboard
+| Teacher Management | Course Overview |
+|-------------------|----------------|
+| ![Teacher Management](./assets/admin-teachers.png) | ![Course Overview](./assets/admin-courses.png) |
+
+### Teacher Portal
+| Course Creation | Content Management |
+|----------------|-------------------|
+| ![Course Creation](./assets/teacher-create-course.png) | ![Content Management](./assets/teacher-content.png) |
+
+### Student Dashboard
+| Course List | Learning Interface |
+|------------|-------------------|
+| ![Course List](./assets/student-courses.png) | ![Learning Interface](./assets/student-learning.png) |
 
 ## 🤝 Contributing
 1. Fork the repository

@@ -1,8 +1,7 @@
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import SignInClient from "@/components/auth/signin-client"
-import { Session } from "next-auth"
 
 // Server component for initial auth check
 export default async function SignInPage({
@@ -13,7 +12,7 @@ export default async function SignInPage({
   // Check for session server-side first
   const session = await getServerSession(authOptions)
   
-  // If already authenticated, redirect to appropriate page based on role
+  // If already authenticated, redirect based on role
   if (session?.user) {
     // Use explicit role-based redirects to prevent loops
     if (session.user.role === "ADMIN") {
@@ -26,10 +25,17 @@ export default async function SignInPage({
   }
   
   // Parse error messages for better user experience
-  const errorMessage = getErrorMessage(searchParams.error)
+  const errorMessage = searchParams?.error ? getErrorMessage(searchParams.error) : null
   
-  // Safe callback URL handling - prevent open redirect vulnerabilities
-  const callbackUrl = validateCallbackUrl(searchParams.callbackUrl)
+  // Safe callback URL handling - prevent open redirect vulnerabilities and API routes
+  let callbackUrl = '/dashboard'
+  if (searchParams?.callbackUrl) {
+    const url = searchParams.callbackUrl
+    // Prevent API routes from being used as callback URLs
+    if (!url.includes('/api/')) {
+      callbackUrl = validateCallbackUrl(url)
+    }
+  }
   
   // Render client component with proper props
   return <SignInClient errorMessage={errorMessage} callbackUrl={callbackUrl} />
@@ -58,10 +64,7 @@ function getErrorMessage(error?: string): string | null {
 }
 
 // Helper function to validate callback URL to prevent open redirect vulnerabilities
-function validateCallbackUrl(url?: string): string {
-  // If no URL provided, use dashboard as default
-  if (!url) return '/dashboard'
-  
+function validateCallbackUrl(url: string): string {
   try {
     // For absolute URLs, check if they're on the same origin
     if (url.startsWith('http')) {
@@ -73,9 +76,14 @@ function validateCallbackUrl(url?: string): string {
       }
     }
     
-    // For relative URLs, make sure they start with /
+    // For relative URLs, make sure they start with / and are not API routes
     if (!url.startsWith('/')) {
       url = '/' + url
+    }
+    
+    // Prevent API routes from being used as callback URLs
+    if (url.includes('/api/')) {
+      return '/dashboard'
     }
     
     return url

@@ -13,8 +13,8 @@ export const authOptions: NextAuthOptions = {
     updateAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
-    signIn: '/login',
-    signOut: '/login',
+    signIn: '/auth/signin',
+    signOut: '/auth/signout',
     error: '/auth/error',
   },
   providers: [
@@ -26,55 +26,61 @@ export const authOptions: NextAuthOptions = {
         role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password || !credentials?.role) {
-          throw new Error("Invalid credentials");
+        try {
+          if (!credentials?.email || !credentials?.password || !credentials?.role) {
+            throw new Error("Missing required fields");
+          }
+
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              password: true,
+              role: true,
+              studentId: true,
+              isApproved: true,
+            },
+          });
+
+          if (!user || !user.password) {
+            throw new Error("Invalid credentials");
+          }
+
+          const isCorrectPassword = await compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isCorrectPassword) {
+            throw new Error("Invalid credentials");
+          }
+
+          // Verify role matches using Role enum
+          const requestedRole = credentials.role.toUpperCase() as Role;
+          if (user.role !== requestedRole) {
+            throw new Error("Invalid role for this user");
+          }
+
+          // For students, verify they are approved
+          if (user.role === Role.STUDENT && !user.isApproved) {
+            throw new Error("Account not approved yet");
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name || "",
+            role: user.role,
+            studentId: user.studentId || undefined,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
+          throw error;
         }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            password: true,
-            role: true,
-            studentId: true,
-            isApproved: true,
-          },
-        });
-
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials");
-        }
-
-        const isCorrectPassword = await compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isCorrectPassword) {
-          throw new Error("Invalid credentials");
-        }
-
-        // Verify role matches
-        if (user.role !== credentials.role) {
-          throw new Error("Invalid role for this user");
-        }
-
-        // For students, verify they are approved
-        if (user.role === Role.STUDENT && !user.isApproved) {
-          throw new Error("Account not approved yet");
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name || "",
-          role: user.role,
-          studentId: user.studentId || undefined,
-        };
       },
     }),
   ],
@@ -107,4 +113,5 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 }; 

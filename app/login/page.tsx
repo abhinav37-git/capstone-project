@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation"
 import { LoginForm } from "@/components/login-form"
 import { SignupForm } from "@/components/signup-form"
 import { toast } from "sonner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertTriangle } from "lucide-react"
 
 function LoginContent() {
   const searchParams = useSearchParams()
@@ -12,28 +14,49 @@ function LoginContent() {
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null)
   const [canCreateAdmin, setCanCreateAdmin] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const role = searchParams.get("role") || "student"
 
   useEffect(() => {
-    if (role === "admin") {
-      setIsLoading(true)
-      fetch("/api/admin/check")
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Failed to check admin status")
+    async function checkAdminStatus() {
+      if (role === "admin") {
+        setIsLoading(true)
+        setError(null)
+        
+        try {
+          const response = await fetch("/api/admin/check", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: 'include' // Important for sending cookies
+          })
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}))
+            console.error("Admin check failed:", {
+              status: response.status,
+              statusText: response.statusText,
+              data
+            })
+            throw new Error(data.message || "Failed to check admin status")
           }
-          return res.json()
-        })
-        .then((data) => {
+
+          const data = await response.json()
+          console.log("Admin check response:", data)
           setHasAdmin(data.hasAdmin)
           setCanCreateAdmin(data.canCreateAdmin)
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Error checking admin status:", error)
-          toast.error("Failed to check admin status. Please try again.")
-        })
-        .finally(() => setIsLoading(false))
+          setError(error instanceof Error ? error.message : "Failed to check admin status")
+          toast.error("Failed to check admin status")
+        } finally {
+          setIsLoading(false)
+        }
+      }
     }
+
+    checkAdminStatus()
   }, [role])
 
   const showSignupOption = role !== "admin" || (role === "admin" && canCreateAdmin)
@@ -55,6 +78,14 @@ function LoginContent() {
         <h1 className="text-2xl font-bold text-center mb-6">
           {isLogin ? `${role.charAt(0).toUpperCase() + role.slice(1)} Login` : "Sign Up"}
         </h1>
+        
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         {isLogin ? (
           <LoginForm role={role} />
         ) : (
